@@ -20,11 +20,22 @@ setup:
     @if [ ! -d ${PROJROOT}/cuppa ]; then ln -s $(shell pwd) ${PROJROOT}/cuppa; fi
     @printf "DONE\n"
 
-validate:
-    go fmt ./...
-    go vet ./...
-    @if [ ! -d ${GOPATH}/bin/golint ]; then go get -u github.com/golang/lint/golint; fi
-    ${GOBIN}/golint github.com/DataDrake/cuppa
+validate: golint-setup
+    @printf "Formatting..."
+    @go fmt ./...
+    @printf "DONE\n"
+    @printf "Vetting..."
+    @go vet ./...
+    @printf "DONE\n"
+    @printf "Linting..."
+    @${GOBIN}/golint -set_exit_status ./...
+    @printf "DONE\n"
+
+golint-setup:
+    @if [ ! -e ${GOBIN}/golint ]; then \
+        go get -u github.com/golang/lint/golint; \
+        rm -rf ${GOPATH}/src/golang.org ${GOPATH}/src/github.com/golang ${GOPATH}/pkg; \
+    fi
 
 clean:
     @unlink ${PROJROOT}/cuppa
