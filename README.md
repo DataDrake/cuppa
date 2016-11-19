@@ -1,6 +1,8 @@
 # cuppa
 Comprehensive Upstream Provider Polling Assistant
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/DataDrake/cuppa)](https://goreportcard.com/report/github.com/DataDrake/cuppa) [![license](https://img.shields.io/github/license/DataDrake/cuppa.svg)]() 
+
 ## Motivation
 
 As a package maintainer, it's a challenging task to keep track of every new release of a piece of software. Usually this involves subscribing to mailing lists, signing up for notifications from FOSS portals like Github, or even subscribing to news sites. For a distro, this might also mean a repeated effort amongst its package maintainers. The inefficiency and time requirements of such an approach is inevitable. This has led several distros to create their own upstream tracking platforms to automate the process of tracking upstream releases. However, these platforms are often distro specific, leading to further duplication of effort between distros.
