@@ -14,31 +14,17 @@
 // limitations under the License.
 //
 
-package main
+package utility
 
-import (
-	"github.com/DataDrake/cuppa/cmd/search"
-	"github.com/DataDrake/cuppa/providers"
-	"os"
-)
-
-func usage() {
-	print("USAGE: cuppa CMD [OPTIONS]\n")
-}
-
-func main() {
-
-	if len(os.Args) < 2 {
-		usage()
-		os.Exit(1)
+/*
+URLJoin combines string fragments into URLs
+*/
+func URLJoin(parts ...string) string {
+	url := parts[0]
+	for i := range parts {
+		if i != 0 {
+			url = url + "/" + parts[i]
+		}
 	}
-
-	ps := []providers.Provider{providers.CPANProvider{}}
-
-	switch os.Args[1] {
-	case "search":
-		search.Execute(ps)
-	}
-
-	os.Exit(0)
+	return url
 }

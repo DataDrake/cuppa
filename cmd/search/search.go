@@ -14,31 +14,38 @@
 // limitations under the License.
 //
 
-package main
+package search
 
 import (
-	"github.com/DataDrake/cuppa/cmd/search"
+	"flag"
+	"fmt"
 	"github.com/DataDrake/cuppa/providers"
+	"github.com/DataDrake/cuppa/results"
 	"os"
 )
 
-func usage() {
-	print("USAGE: cuppa CMD [OPTIONS]\n")
+func searchUsage() {
+	print("\t USAGE: cuppa search <URL> or cuppa search <NAME>")
 }
 
-func main() {
+func newSearchCMD() *flag.FlagSet {
+	scmd := flag.NewFlagSet("search", flag.ExitOnError)
+	scmd.Usage = searchUsage
+	return scmd
+}
 
-	if len(os.Args) < 2 {
-		usage()
-		os.Exit(1)
+/*
+Execute search for all providers
+*/
+func Execute(ps []providers.Provider) {
+	scmd := newSearchCMD()
+	scmd.Parse(os.Args[2:])
+	for _, p := range ps {
+		rs, s := p.Search(scmd.Arg(0))
+		if s != results.OK {
+			fmt.Fprintf(os.Stderr, "Failed to perform search, code: %d\n", s)
+			os.Exit(1)
+		}
+		rs.PrintAll()
 	}
-
-	ps := []providers.Provider{providers.CPANProvider{}}
-
-	switch os.Args[1] {
-	case "search":
-		search.Execute(ps)
-	}
-
-	os.Exit(0)
 }
