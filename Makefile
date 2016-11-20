@@ -8,7 +8,7 @@ GOSRC    = build/src
 PROJROOT = $(GOSRC)/github.com/DataDrake
 
 DESTDIR ?=
-PREFIX  ?= /usr/local
+PREFIX  ?= /usr
 BINDIR   = $(PREFIX)/bin
 
 all: build
