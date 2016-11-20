@@ -1,42 +1,68 @@
 .RECIPEPREFIX != ps
 
+GOCC     = go
+
 GOPATH   = $(shell pwd)/build
-GOBIN    = ${GOPATH}/bin
-GOSRC    = ${GOPATH}/src
-PROJROOT = ${GOSRC}/github.com/DataDrake
+GOBIN    = build/bin
+GOSRC    = build/src
+PROJROOT = $(GOSRC)/github.com/DataDrake
+
+DESTDIR ?=
+PREFIX  ?= /usr/local
+BINDIR   = $(PREFIX)/bin
 
 all: build
 
 build: setup
-    @printf "Building..."
-    @go install github.com/DataDrake/cuppa
-    @printf "DONE\n"
+    @printf "\e[34m[Start Build]\e[39m\n"
+    $(GOCC) install -v github.com/DataDrake/cuppa
+    @printf "\e[34m[End Build]\e[39m\n\n"
 
 setup:
-    @printf "Setting up..."
-    @if [ ! -d ${GOPATH} ]; then mkdir -p $(GOPATH); fi
-    @if [ ! -d ${GOSRC} ]; then mkdir -p ${GOSRC}; fi
-    @if [ ! -d ${PROJROOT} ]; then mkdir -p ${PROJROOT}; fi
-    @if [ ! -d ${PROJROOT}/cuppa ]; then ln -s $(shell pwd) ${PROJROOT}/cuppa; fi
-    @printf "DONE\n"
+    @printf "\e[34m[Start Setup]\e[39m\n"
+    @printf "Setting up GOPATH...\n"
+    @mkdir -p $(GOPATH)
+    @printf "Setting up src/...\n"
+    @mkdir -p $(GOSRC)
+    @printf "Setting up project root...\n"
+    @mkdir -p $(PROJROOT)
+    @printf "Setting up symlinks...\n"
+    @if [ ! -d $(PROJROOT)/cuppa ]; then ln -s $(shell pwd) $(PROJROOT)/cuppa; fi
+    @printf "\e[34m[End Setup]\e[39m\n\n"
 
 validate: golint-setup
-    @printf "Formatting..."
-    @go fmt ./...
-    @printf "DONE\n"
-    @printf "Vetting..."
-    @go vet ./...
-    @printf "DONE\n"
-    @printf "Linting..."
-    @${GOBIN}/golint -set_exit_status ./...
-    @printf "DONE\n"
+    @printf "\e[34m[Start Format]\e[39m\n"
+    $(GOCC) fmt -x ./...
+    @printf "\e[34m[End Format]\e[39m\n\n"
+    @printf "\e[34m[Start Vet]\e[39m\n"
+    $(GOCC) vet -x ./...
+    @printf "\e[34m[End Vet]\e[39m\n\n"
+    @printf "\e[34m[Start Lint]\e[39m\n"
+    $(GOBIN)/golint -set_exit_status ./...
+    @printf "\e[34m[End Lint]\e[39m\n\n"
 
 golint-setup:
-    @if [ ! -e ${GOBIN}/golint ]; then \
-        go get -u github.com/golang/lint/golint; \
-        rm -rf ${GOPATH}/src/golang.org ${GOPATH}/src/github.com/golang ${GOPATH}/pkg; \
+    @if [ ! -e $(GOBIN)/golint ]; then \
+        printf "Installing golint..."; \
+        $(GOCC) get -u github.com/golang/lint/golint; \
+        printf "DONE\n\n"; \
+        rm -rf $(GOPATH)/src/golang.org $(GOPATH)/src/github.com/golang $(GOPATH)/pkg; \
     fi
 
+install:
+    @printf "\e[34m[Start Install]\e[39m\n"
+    install -D -m 00755 $(GOBIN)/cuppa $(DESTDIR)$(BINDIR)/cuppa
+    @printf "\e[34m[End Install]\e[39m\n"
+
+uninstall:
+    @printf "\e[34m[Start Uninstall]\e[39m\n"
+    rm -f $(DESTDIR)$(BINDIR)/cuppa
+    @printf "\e[34m[End Uninstall]\e[39m\n"
+
 clean:
-    @unlink ${PROJROOT}/cuppa
-    @rm -r build
+    @printf "\e[34m[Start Clean]\e[39m\n"
+    @printf "Removing symlinks...\n"
+    unlink $(PROJROOT)/cuppa
+    @printf "Removing build directory...\n"
+    rm -r build
+    @printf "\e[34m[End Clean]\e[39m\n\n"
