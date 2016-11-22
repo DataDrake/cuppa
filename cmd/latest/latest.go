@@ -14,37 +14,38 @@
 // limitations under the License.
 //
 
-package main
+package latest
 
 import (
-	"github.com/DataDrake/cuppa/cmd/latest"
-	"github.com/DataDrake/cuppa/cmd/search"
+	"flag"
+	"fmt"
 	"github.com/DataDrake/cuppa/providers"
+	"github.com/DataDrake/cuppa/results"
 	"os"
 )
 
-func usage() {
-	print("USAGE: cuppa CMD [OPTIONS]\n")
+func latestUsage() {
+	print("\t USAGE: cuppa latest <URL> or cuppa latest <NAME>")
 }
 
-func main() {
+func newLatestCMD() *flag.FlagSet {
+	scmd := flag.NewFlagSet("latest", flag.ExitOnError)
+	scmd.Usage = latestUsage
+	return scmd
+}
 
-	if len(os.Args) < 2 {
-		usage()
-		os.Exit(1)
+/*
+Execute search for all providers
+*/
+func Execute(ps []providers.Provider) {
+	lcmd := newLatestCMD()
+	lcmd.Parse(os.Args[2:])
+	for _, p := range ps {
+		r, s := p.Latest(lcmd.Arg(0))
+		if s != results.OK {
+			fmt.Fprintf(os.Stderr, "Failed to get latest, code: %d\n", s)
+			os.Exit(1)
+		}
+		r.Print()
 	}
-
-	ps := []providers.Provider{providers.CPANProvider{}}
-
-	switch os.Args[1] {
-	case "latest":
-		latest.Execute(ps)
-	case "search":
-		search.Execute(ps)
-	default:
-		usage()
-		os.Exit(1)
-	}
-
-	os.Exit(0)
 }

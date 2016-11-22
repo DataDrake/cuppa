@@ -34,9 +34,14 @@ type cpanRelease struct {
 	Cpanid   string `json:"cpanid"`
 	Version  string `json:"version"`
 	Released string `json:"released"`
+	Error    string `json:"error"`
+	Status   string `json:"status"`
 }
 
 func (cr *cpanRelease) Convert() *results.Result {
+	if cr.Status != "stable" {
+		return nil
+	}
 	r := &results.Result{}
 	r.Name = cr.Dist
 	r.Version = cr.Version
@@ -53,7 +58,9 @@ func (crs *cpanResultSet) Convert(name string) *results.ResultSet {
 	rs := results.NewResultSet(name)
 	for _, rel := range crs.Releases {
 		r := rel.Convert()
-		rs.AddResult(r)
+		if r != nil {
+			rs.AddResult(r)
+		}
 	}
 	return rs
 }
@@ -62,6 +69,19 @@ func (crs *cpanResultSet) Convert(name string) *results.ResultSet {
 CPANProvider is the upstream provider interface for CPAN
 */
 type CPANProvider struct{}
+
+/*
+Latest finds the newest release for a CPAN package
+*/
+func (c CPANProvider) Latest(Name string) (r *results.Result, s results.Status) {
+	rs, s := c.Search(Name)
+	//Fail if not OK
+	if s != results.OK {
+		return
+	}
+	r = rs.First()
+	return
+}
 
 /*
 Search finds all matching releases for a CPAN package
