@@ -35,7 +35,7 @@ func newLatestCMD() *flag.FlagSet {
 }
 
 /*
-Execute search for all providers
+Execute releases for all providers
 */
 func Execute(ps []providers.Provider) {
 	lcmd := newLatestCMD()

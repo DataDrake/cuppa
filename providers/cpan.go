@@ -77,7 +77,7 @@ type CPANProvider struct{}
 Latest finds the newest release for a CPAN package
 */
 func (c CPANProvider) Latest(name string) (r *results.Result, s results.Status) {
-	rs, s := c.Search(name)
+	rs, s := c.Releases(name)
 	//Fail if not OK
 	if s != results.OK {
 		return
@@ -102,9 +102,9 @@ func (c CPANProvider) Match(query string) string {
 }
 
 /*
-Search finds all matching releases for a CPAN package
+Releases finds all matching releases for a CPAN package
 */
-func (c CPANProvider) Search(name string) (rs *results.ResultSet, s results.Status) {
+func (c CPANProvider) Releases(name string) (rs *results.ResultSet, s results.Status) {
 	//Query the API
 	resp, err := http.Get(utility.URLJoin(cpanDistAPI, name))
 	if err != nil {

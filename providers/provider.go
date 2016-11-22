@@ -24,5 +24,5 @@ Provider provides a common interface for each of the backend providers
 type Provider interface {
 	Latest(name string) (*results.Result, results.Status)
 	Match(query string) string
-	Search(name string) (*results.ResultSet, results.Status)
+	Releases(name string) (*results.ResultSet, results.Status)
 }

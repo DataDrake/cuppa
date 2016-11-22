@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package search
+package releases
 
 import (
 	"flag"
@@ -24,30 +24,30 @@ import (
 	"os"
 )
 
-func searchUsage() {
-	print("\t USAGE: cuppa search <URL> or cuppa search <NAME>")
+func releasesUsage() {
+	print("\t USAGE: cuppa releases <URL> or cuppa releases <NAME>")
 }
 
-func newSearchCMD() *flag.FlagSet {
-	scmd := flag.NewFlagSet("search", flag.ExitOnError)
-	scmd.Usage = searchUsage
-	return scmd
+func newReleaserCMD() *flag.FlagSet {
+	rcmd := flag.NewFlagSet("releases", flag.ExitOnError)
+	rcmd.Usage = releasesUsage
+	return rcmd
 }
 
 /*
-Execute search for all providers
+Execute releases for all providers
 */
 func Execute(ps []providers.Provider) {
-	scmd := newSearchCMD()
-	scmd.Parse(os.Args[2:])
+	rcmd := newReleaserCMD()
+	rcmd.Parse(os.Args[2:])
 	for _, p := range ps {
-		name := p.Match(scmd.Arg(0))
+		name := p.Match(rcmd.Arg(0))
 		if name == "" {
 			continue
 		}
-		rs, s := p.Search(name)
+		rs, s := p.Releases(name)
 		if s != results.OK {
-			fmt.Fprintf(os.Stderr, "Failed to perform search, code: %d\n", s)
+			fmt.Fprintf(os.Stderr, "Failed to perform releases, code: %d\n", s)
 			os.Exit(1)
 		}
 		rs.PrintAll()
