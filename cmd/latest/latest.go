@@ -41,7 +41,11 @@ func Execute(ps []providers.Provider) {
 	lcmd := newLatestCMD()
 	lcmd.Parse(os.Args[2:])
 	for _, p := range ps {
-		r, s := p.Latest(lcmd.Arg(0))
+		name := p.Match(lcmd.Arg(0))
+		if name == "" {
+			continue
+		}
+		r, s := p.Latest(name)
 		if s != results.OK {
 			fmt.Fprintf(os.Stderr, "Failed to get latest, code: %d\n", s)
 			os.Exit(1)

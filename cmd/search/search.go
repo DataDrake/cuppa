@@ -41,7 +41,11 @@ func Execute(ps []providers.Provider) {
 	scmd := newSearchCMD()
 	scmd.Parse(os.Args[2:])
 	for _, p := range ps {
-		rs, s := p.Search(scmd.Arg(0))
+		name := p.Match(scmd.Arg(0))
+		if name == "" {
+			continue
+		}
+		rs, s := p.Search(name)
 		if s != results.OK {
 			fmt.Fprintf(os.Stderr, "Failed to perform search, code: %d\n", s)
 			os.Exit(1)

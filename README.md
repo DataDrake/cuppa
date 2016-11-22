@@ -17,11 +17,9 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 ## Progress
 
 ### Supported Providers
+* CPAN
 
 ### Planned Providers
-
-* CPAN
-* CTAN
 * FTP
 * Github
 * Hackage

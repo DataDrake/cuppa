@@ -22,11 +22,14 @@ import (
 	"github.com/DataDrake/cuppa/utility"
 	"net/http"
 	"net/url"
+	"regexp"
+	"strings"
 	"time"
 )
 
 var cpanDistAPI = "http://search.cpan.org/api/dist"
 var cpanSrcRoot = "http://search.cpan.org/CPAN/authors/id"
+var cpanRegex = regexp.MustCompilePOSIX("http://search.cpan.org/CPAN/authors/id/(.*)")
 
 type cpanRelease struct {
 	Dist     string `json:"dist"`
@@ -73,8 +76,8 @@ type CPANProvider struct{}
 /*
 Latest finds the newest release for a CPAN package
 */
-func (c CPANProvider) Latest(Name string) (r *results.Result, s results.Status) {
-	rs, s := c.Search(Name)
+func (c CPANProvider) Latest(name string) (r *results.Result, s results.Status) {
+	rs, s := c.Search(name)
 	//Fail if not OK
 	if s != results.OK {
 		return
@@ -84,11 +87,26 @@ func (c CPANProvider) Latest(Name string) (r *results.Result, s results.Status) 
 }
 
 /*
+Match checks to see if this provider can handle this kind of query
+*/
+func (c CPANProvider) Match(query string) string {
+	sm := cpanRegex.FindStringSubmatch(query)
+	if len(sm) == 0 {
+		return ""
+	}
+	sms := strings.Split(sm[1], "/")
+	filename := sms[len(sms)-1]
+	pieces := strings.Split(filename, "-")
+	pieces = pieces[0 : len(sms)-2]
+	return strings.Join(pieces, "-")
+}
+
+/*
 Search finds all matching releases for a CPAN package
 */
-func (c CPANProvider) Search(Name string) (rs *results.ResultSet, s results.Status) {
+func (c CPANProvider) Search(name string) (rs *results.ResultSet, s results.Status) {
 	//Query the API
-	resp, err := http.Get(utility.URLJoin(cpanDistAPI, Name))
+	resp, err := http.Get(utility.URLJoin(cpanDistAPI, name))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -114,6 +132,6 @@ func (c CPANProvider) Search(Name string) (rs *results.ResultSet, s results.Stat
 	if err != nil {
 		panic(err.Error())
 	}
-	rs = crs.Convert(Name)
+	rs = crs.Convert(name)
 	return
 }
