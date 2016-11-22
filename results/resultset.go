@@ -51,8 +51,8 @@ func (rs *ResultSet) First() *Result {
 PrintAll pretty-prints an entire ResultSet
 */
 func (rs *ResultSet) PrintAll() {
-	fmt.Printf("Results of Query: '%s'\n", rs.query)
-	fmt.Printf("Total Number of Results: %d\n\n", len(rs.results))
+	fmt.Printf("%-25s: '%s'\n", "Results of Query", rs.query)
+	fmt.Printf("%-25s: %d\n\n", "Total Number of Results", len(rs.results))
 	for _, r := range rs.results {
 		r.Print()
 	}

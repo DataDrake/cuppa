@@ -102,6 +102,13 @@ func (c CPANProvider) Match(query string) string {
 }
 
 /*
+Name gives the name of this provider
+*/
+func (c CPANProvider) Name() string {
+	return "CPAN"
+}
+
+/*
 Releases finds all matching releases for a CPAN package
 */
 func (c CPANProvider) Releases(name string) (rs *results.ResultSet, s results.Status) {
@@ -131,6 +138,10 @@ func (c CPANProvider) Releases(name string) (rs *results.ResultSet, s results.St
 	err = dec.Decode(crs)
 	if err != nil {
 		panic(err.Error())
+	}
+	if len(crs.Releases) == 0 {
+		s = results.NotFound
+		return
 	}
 	rs = crs.Convert(name)
 	return

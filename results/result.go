@@ -43,9 +43,9 @@ func NewResult(name, version string, location *url.URL, published time.Time) *Re
 Print pretty-prints a single Result
 */
 func (r *Result) Print() {
-	fmt.Printf("Name: %s\n", r.Name)
-	fmt.Printf("Version: %s\n", r.Version)
-	fmt.Printf("Location: %s\n", r.Location.String())
-	fmt.Printf("Published: %s\n", r.Published.Format(time.RFC3339))
-	fmt.Println("")
+	fmt.Printf("%-10s: %s\n", "Name", r.Name)
+	fmt.Printf("%-10s: %s\n", "Version", r.Version)
+	fmt.Printf("%-10s: %s\n", "Location", r.Location.String())
+	fmt.Printf("%-10s: %s\n", "Published", r.Published.Format(time.RFC3339))
+	fmt.Println()
 }

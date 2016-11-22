@@ -18,9 +18,9 @@ package latest
 
 import (
 	"flag"
-	"fmt"
 	"github.com/DataDrake/cuppa/providers"
 	"github.com/DataDrake/cuppa/results"
+	"github.com/DataDrake/cuppa/utility"
 	"os"
 )
 
@@ -41,13 +41,15 @@ func Execute(ps []providers.Provider) {
 	lcmd := newLatestCMD()
 	lcmd.Parse(os.Args[2:])
 	for _, p := range ps {
+		utility.Statusf("Checking provider '%s':", p.Name())
 		name := p.Match(lcmd.Arg(0))
 		if name == "" {
+			utility.Warningf("Query does not supported by this provider.")
 			continue
 		}
 		r, s := p.Latest(name)
 		if s != results.OK {
-			fmt.Fprintf(os.Stderr, "Failed to get latest, code: %d\n", s)
+			utility.Errorf("Failed to get latest, code: %d", s)
 			os.Exit(1)
 		}
 		r.Print()

@@ -18,9 +18,9 @@ package releases
 
 import (
 	"flag"
-	"fmt"
 	"github.com/DataDrake/cuppa/providers"
 	"github.com/DataDrake/cuppa/results"
+	"github.com/DataDrake/cuppa/utility"
 	"os"
 )
 
@@ -41,13 +41,15 @@ func Execute(ps []providers.Provider) {
 	rcmd := newReleaserCMD()
 	rcmd.Parse(os.Args[2:])
 	for _, p := range ps {
+		utility.Statusf("Checking provider '%s':", p.Name())
 		name := p.Match(rcmd.Arg(0))
 		if name == "" {
+			utility.Warningf("Query does not supported by this provider.")
 			continue
 		}
 		rs, s := p.Releases(name)
 		if s != results.OK {
-			fmt.Fprintf(os.Stderr, "Failed to perform releases, code: %d\n", s)
+			utility.Errorf("Failed to fetch releases, code: %d", s)
 			os.Exit(1)
 		}
 		rs.PrintAll()
