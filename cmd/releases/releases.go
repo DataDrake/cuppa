@@ -44,6 +44,7 @@ func Execute(ps []providers.Provider) {
 	w.SetLevel(level.Info)
 	rcmd := newReleaserCMD()
 	rcmd.Parse(os.Args[2:])
+	found := false
 	for _, p := range ps {
 		w.Infof("Checking provider '%s':\n", p.Name())
 		name := p.Match(rcmd.Arg(0))
@@ -53,9 +54,16 @@ func Execute(ps []providers.Provider) {
 		}
 		rs, s := p.Releases(name)
 		if s != results.OK {
-			w.Fatalf("Failed to fetch releases, code: %d\n", s)
+			w.Warnf("Failed to fetch releases, code: %d\n", s)
+			continue
 		}
+		found = true
 		rs.PrintAll()
-		w.Goodln("Done.")
+		w.Goodf("Found Match for provider: '%s'\n", p.Name())
+	}
+	if found {
+		w.Goodln("Done")
+	} else {
+		w.Fatalln("Failed to find latest")
 	}
 }
