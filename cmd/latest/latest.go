@@ -22,7 +22,7 @@ import (
 	"github.com/DataDrake/cuppa/results"
 	"github.com/DataDrake/waterlog"
 	"github.com/DataDrake/waterlog/level"
-    "log"
+	"log"
 	"os"
 )
 
@@ -40,11 +40,11 @@ func newLatestCMD() *flag.FlagSet {
 Execute releases for all providers
 */
 func Execute(ps []providers.Provider) {
-    w := waterlog.New(os.Stdout,"",log.Ltime)
-    w.SetLevel(level.Info)
+	w := waterlog.New(os.Stdout, "", log.Ltime)
+	w.SetLevel(level.Info)
 	lcmd := newLatestCMD()
 	lcmd.Parse(os.Args[2:])
-    found := false
+	found := false
 	for _, p := range ps {
 		w.Infof("Checking provider '%s':\n", p.Name())
 		name := p.Match(lcmd.Arg(0))
@@ -53,17 +53,17 @@ func Execute(ps []providers.Provider) {
 			continue
 		}
 		r, s := p.Latest(name)
-        if s != results.OK {
-            w.Warnf("Could not get latest '%s', code: %d\n", name, s)
-            continue
-        }
-        found = true
-        r.Print()
-        w.Goodf("Found Match for provider: '%s'\n", p.Name())
+		if s != results.OK {
+			w.Warnf("Could not get latest '%s', code: %d\n", name, s)
+			continue
+		}
+		found = true
+		r.Print()
+		w.Goodf("Found Match for provider: '%s'\n", p.Name())
 	}
-    if found {
-        w.Goodln("Done")
-    } else {
-        w.Fatalln("Failed to find latest")
-    }
+	if found {
+		w.Goodln("Done")
+	} else {
+		w.Fatalln("Failed to find latest")
+	}
 }

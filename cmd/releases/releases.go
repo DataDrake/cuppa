@@ -22,7 +22,7 @@ import (
 	"github.com/DataDrake/cuppa/results"
 	"github.com/DataDrake/waterlog"
 	"github.com/DataDrake/waterlog/level"
-    "log"
+	"log"
 	"os"
 )
 
@@ -40,8 +40,8 @@ func newReleaserCMD() *flag.FlagSet {
 Execute releases for all providers
 */
 func Execute(ps []providers.Provider) {
-    w := waterlog.New(os.Stdout,"",log.Ltime)
-    w.SetLevel(level.Info)
+	w := waterlog.New(os.Stdout, "", log.Ltime)
+	w.SetLevel(level.Info)
 	rcmd := newReleaserCMD()
 	rcmd.Parse(os.Args[2:])
 	for _, p := range ps {
