@@ -20,7 +20,9 @@ import (
 	"flag"
 	"github.com/DataDrake/cuppa/providers"
 	"github.com/DataDrake/cuppa/results"
-	"github.com/DataDrake/cuppa/utility"
+	"github.com/DataDrake/waterlog"
+	"github.com/DataDrake/waterlog/level"
+    "log"
 	"os"
 )
 
@@ -38,20 +40,30 @@ func newLatestCMD() *flag.FlagSet {
 Execute releases for all providers
 */
 func Execute(ps []providers.Provider) {
+    w := waterlog.New(os.Stdout,"",log.Ltime)
+    w.SetLevel(level.Info)
 	lcmd := newLatestCMD()
 	lcmd.Parse(os.Args[2:])
+    found := false
 	for _, p := range ps {
-		utility.Statusf("Checking provider '%s':", p.Name())
+		w.Infof("Checking provider '%s':\n", p.Name())
 		name := p.Match(lcmd.Arg(0))
 		if name == "" {
-			utility.Warningf("Query does not supported by this provider.")
+			w.Warnln("Query does not supported by this provider.")
 			continue
 		}
 		r, s := p.Latest(name)
-		if s != results.OK {
-			utility.Errorf("Failed to get latest, code: %d", s)
-			os.Exit(1)
-		}
-		r.Print()
+        if s != results.OK {
+            w.Warnf("Could not get latest '%s', code: %d\n", name, s)
+            continue
+        }
+        found = true
+        r.Print()
+        w.Goodf("Found Match for provider: '%s'\n", p.Name())
 	}
+    if found {
+        w.Goodln("Done")
+    } else {
+        w.Fatalln("Failed to find latest")
+    }
 }

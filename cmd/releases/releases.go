@@ -20,7 +20,9 @@ import (
 	"flag"
 	"github.com/DataDrake/cuppa/providers"
 	"github.com/DataDrake/cuppa/results"
-	"github.com/DataDrake/cuppa/utility"
+	"github.com/DataDrake/waterlog"
+	"github.com/DataDrake/waterlog/level"
+    "log"
 	"os"
 )
 
@@ -38,20 +40,22 @@ func newReleaserCMD() *flag.FlagSet {
 Execute releases for all providers
 */
 func Execute(ps []providers.Provider) {
+    w := waterlog.New(os.Stdout,"",log.Ltime)
+    w.SetLevel(level.Info)
 	rcmd := newReleaserCMD()
 	rcmd.Parse(os.Args[2:])
 	for _, p := range ps {
-		utility.Statusf("Checking provider '%s':", p.Name())
+		w.Infof("Checking provider '%s':\n", p.Name())
 		name := p.Match(rcmd.Arg(0))
 		if name == "" {
-			utility.Warningf("Query does not supported by this provider.")
+			w.Warnln("Query does not supported by this provider.")
 			continue
 		}
 		rs, s := p.Releases(name)
 		if s != results.OK {
-			utility.Errorf("Failed to fetch releases, code: %d", s)
-			os.Exit(1)
+			w.Fatalf("Failed to fetch releases, code: %d\n", s)
 		}
 		rs.PrintAll()
+		w.Goodln("Done.")
 	}
 }

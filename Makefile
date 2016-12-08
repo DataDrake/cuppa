@@ -30,6 +30,8 @@ setup:
     @mkdir -p $(PROJROOT)
     @$(call task,Setting up symlinks...)
     @if [ ! -d $(PROJROOT)/cuppa ]; then ln -s $(shell pwd) $(PROJROOT)/cuppa; fi
+    @$(call task,Getting dependencies...)
+    @go get github.com/DataDrake/waterlog
     @$(call pass,SETUP)
 
 validate: golint-setup

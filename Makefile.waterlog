@@ -1,0 +1,16 @@
+define stage
+    printf "\033[30;48;5;004m ⮞ \033[7m %s \033[27m %s \033[49;38;5;004m %s\033[0m\n" "$(shell date +%H:%M:%S)" "$1" "$2"
+endef
+
+define fail
+    printf "\033[30;48;5;208m ✗ \033[7m %s \033[27m %s \033[49;38;5;208m %s\033[0m\n" "$(shell date +%H:%M:%S)" "$1" "$2"
+    exit 1
+endef
+
+define pass
+    printf "\033[30;48;5;040m 🗸 \033[7m %s \033[27m %s \033[49;38;5;040m %s\033[0m\n" "$(shell date +%H:%M:%S)" "$1" "$2"
+endef
+
+define task
+    printf "\033[30;48;5;220m 🗲 \033[7m %s \033[27m %s \033[49;38;5;220m %s\033[0m\n" "$(shell date +%H:%M:%S)" "TASK" "$1"
+endef
