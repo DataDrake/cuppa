@@ -34,7 +34,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	ps := []providers.Provider{providers.CPANProvider{}}
+	ps := []providers.Provider{providers.CPANProvider{}, providers.JetBrainsProvider{}}
 
 	switch os.Args[1] {
 	case "latest":

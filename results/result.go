@@ -45,7 +45,9 @@ Print pretty-prints a single Result
 func (r *Result) Print() {
 	fmt.Printf("%-10s: %s\n", "Name", r.Name)
 	fmt.Printf("%-10s: %s\n", "Version", r.Version)
-	fmt.Printf("%-10s: %s\n", "Location", r.Location.String())
+	if r.Location != nil {
+		fmt.Printf("%-10s: %s\n", "Location", r.Location.String())
+	}
 	fmt.Printf("%-10s: %s\n", "Published", r.Published.Format(time.RFC3339))
 	fmt.Println()
 }

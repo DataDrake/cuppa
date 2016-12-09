@@ -68,5 +68,5 @@ clean:
     @$(call task,Removing symlinks...)
     @unlink $(PROJROOT)/cuppa
     @$(call task,Removing build directory...)
-    @rm -r build
+    @rm -rf build
     @$(call pass,CLEAN)
