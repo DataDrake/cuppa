@@ -27,3 +27,11 @@ type Provider interface {
 	Name() string
 	Releases(name string) (*results.ResultSet, results.Status)
 }
+
+// All returns a list of all available providers
+func All() []Provider {
+	return []Provider{
+		CPANProvider{},
+		JetBrainsProvider{},
+	}
+}

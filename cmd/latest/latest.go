@@ -43,7 +43,7 @@ Execute releases for all providers
 func Execute(ps []providers.Provider) {
 	w := waterlog.New(os.Stdout, "", log.Ltime)
 	w.SetLevel(level.Info)
-    w.SetFormat(format.Min)
+	w.SetFormat(format.Min)
 	lcmd := newLatestCMD()
 	lcmd.Parse(os.Args[2:])
 	found := false
