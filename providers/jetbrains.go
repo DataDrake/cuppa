@@ -18,6 +18,7 @@ package providers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
 	"net/url"
@@ -39,7 +40,8 @@ var releaseCode = map[string]string{
 	"webstorm":             "WS",
 }
 
-var jetbrainsAPI = "https://data.services.jetbrains.com/products/releases?code="
+var jetbrainsAPI = "https://data.services.jetbrains.com/products/releases?code=%s"
+var jetbrainsAPILatest = "https://data.services.jetbrains.com/products/releases?code=%s&latest=true"
 var jetbrainsRegex = regexp.MustCompilePOSIX("https://download.jetbrains.com/.+?/(.+)-[0-9].*")
 
 type jetbrainsDownload struct {
@@ -99,7 +101,7 @@ Latest finds the newest release for a JetBrains package
 func (c JetBrainsProvider) Latest(name string) (r *results.Result, s results.Status) {
 	//Query the API
 	code := releaseCode[name]
-	resp, err := http.Get(jetbrainsAPI + code + "&latest=true")
+	resp, err := http.Get(fmt.Sprintf(jetbrainsAPI, code))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -157,7 +159,7 @@ Releases finds all matching releases for a JetBrains package
 func (c JetBrainsProvider) Releases(name string) (rs *results.ResultSet, s results.Status) {
 	//Query the API
 	code := releaseCode[name]
-	resp, err := http.Get(jetbrainsAPI + code)
+	resp, err := http.Get(fmt.Sprintf(jetbrainsAPI, code))
 	if err != nil {
 		panic(err.Error())
 	}

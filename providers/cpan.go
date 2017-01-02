@@ -18,8 +18,8 @@ package providers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/DataDrake/cuppa/results"
-	"github.com/DataDrake/cuppa/utility"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -27,8 +27,8 @@ import (
 	"time"
 )
 
-var cpanDistAPI = "http://search.cpan.org/api/dist"
-var cpanSrcRoot = "http://search.cpan.org/CPAN/authors/id"
+var cpanAPIDist = "http://search.cpan.org/api/dist/%s"
+var cpanSource = "http://search.cpan.org/CPAN/authors/id/%s/%s/%s/%s"
 var cpanRegex = regexp.MustCompilePOSIX("http://search.cpan.org/CPAN/authors/id/(.*)")
 
 type cpanRelease struct {
@@ -49,7 +49,7 @@ func (cr *cpanRelease) Convert() *results.Result {
 	r.Name = cr.Dist
 	r.Version = cr.Version
 	r.Published, _ = time.Parse(time.RFC3339, cr.Released)
-	r.Location, _ = url.Parse(utility.URLJoin(cpanSrcRoot, cr.Cpanid[0:1], cr.Cpanid[0:2], cr.Cpanid, cr.Archive))
+	r.Location, _ = url.Parse(fmt.Sprintf(cpanSource, cr.Cpanid[0:1], cr.Cpanid[0:2], cr.Cpanid, cr.Archive))
 	return r
 }
 
@@ -113,7 +113,7 @@ Releases finds all matching releases for a CPAN package
 */
 func (c CPANProvider) Releases(name string) (rs *results.ResultSet, s results.Status) {
 	//Query the API
-	resp, err := http.Get(utility.URLJoin(cpanDistAPI, name))
+	resp, err := http.Get(fmt.Sprintf(cpanAPIDist, name))
 	if err != nil {
 		panic(err.Error())
 	}
