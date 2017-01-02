@@ -32,6 +32,7 @@ type Provider interface {
 func All() []Provider {
 	return []Provider{
 		CPANProvider{},
+		GitHubProvider{},
 		JetBrainsProvider{},
 	}
 }

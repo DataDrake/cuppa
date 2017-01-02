@@ -18,11 +18,12 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 
 ### Supported Providers
 * CPAN
+* Github
 * Jetbrains
 
 ### Planned Providers
 * FTP
-* Github
+* Git
 * Hackage
 * Launchpad
 * RubyGems
