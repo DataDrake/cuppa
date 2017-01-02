@@ -42,7 +42,7 @@ var releaseCode = map[string]string{
 
 var jetbrainsAPI = "https://data.services.jetbrains.com/products/releases?code=%s"
 var jetbrainsAPILatest = "https://data.services.jetbrains.com/products/releases?code=%s&latest=true"
-var jetbrainsRegex = regexp.MustCompilePOSIX("https://download.jetbrains.com/.+?/(.+)-[0-9].*")
+var jetbrainsRegex = regexp.MustCompile("https://download.jetbrains.com/.+?/(.+)-\d.*")
 
 type jetbrainsDownload struct {
 	ChecksumLink string `json:"checksumLink"`

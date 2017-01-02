@@ -29,7 +29,7 @@ import (
 
 var cpanAPIDist = "http://search.cpan.org/api/dist/%s"
 var cpanSource = "http://search.cpan.org/CPAN/authors/id/%s/%s/%s/%s"
-var cpanRegex = regexp.MustCompilePOSIX("http://search.cpan.org/CPAN/authors/id/(.*)")
+var cpanRegex = regexp.MustCompile("http://search.cpan.org/CPAN/authors/id/(.*)")
 
 type cpanRelease struct {
 	Dist     string `json:"dist"`
