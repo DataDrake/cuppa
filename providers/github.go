@@ -29,7 +29,8 @@ import (
 var githubAPILatest = "https://api.github.com/repos/%s/releases/latest"
 var githubAPIReleases = "https://api.github.com/repos/%s/releases"
 var githubSource = "https://github.com/%s/archive/%s.tar.gz"
-var githubRegex = regexp.MustCompilePOSIX("https?://github.com/(.*)/.*?.tar.gz")
+var githubRegex = regexp.MustCompile("https?://github.com/(.*)/.*?.tar.gz")
+var githubVersionRegex = regexp.MustCompile("(?:\\d+\\.)*\\d+\\w*")
 
 type githubRelease struct {
 	CreatedAt  string `json:"created_at"`
@@ -44,7 +45,7 @@ func (cr *githubRelease) Convert(name string) *results.Result {
 	}
 	r := &results.Result{}
 	r.Name = cr.Name
-	r.Version = cr.Tag
+	r.Version = githubVersionRegex.FindString(cr.Tag)
 	r.Published, _ = time.Parse(time.RFC3339, cr.CreatedAt)
 	r.Location, _ = url.Parse(fmt.Sprintf(githubSource, name, cr.Tag))
 	return r
