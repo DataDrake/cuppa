@@ -51,3 +51,10 @@ func (r *Result) Print() {
 	fmt.Printf("%-10s: %s\n", "Published", r.Published.Format(time.RFC3339))
 	fmt.Println()
 }
+
+/*
+PrintSimple only prints the version and the location of the latest release
+*/
+func (r *Result) PrintSimple() {
+	fmt.Printf("%s %s\n", r.Version, r.Location.String())
+}

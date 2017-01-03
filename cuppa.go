@@ -18,6 +18,7 @@ package main
 
 import (
 	"github.com/DataDrake/cuppa/cmd/latest"
+	"github.com/DataDrake/cuppa/cmd/quick"
 	"github.com/DataDrake/cuppa/cmd/releases"
 	"github.com/DataDrake/cuppa/providers"
 	"os"
@@ -39,6 +40,8 @@ func main() {
 	switch os.Args[1] {
 	case "latest":
 		latest.Execute(ps)
+	case "quick":
+		quick.Execute(ps)
 	case "releases":
 		releases.Execute(ps)
 	default:

@@ -14,58 +14,45 @@
 // limitations under the License.
 //
 
-package latest
+package quick
 
 import (
 	"flag"
 	"github.com/DataDrake/cuppa/providers"
 	"github.com/DataDrake/cuppa/results"
-	"github.com/DataDrake/waterlog"
-	"github.com/DataDrake/waterlog/format"
-	"github.com/DataDrake/waterlog/level"
-	"log"
 	"os"
 )
 
-func latestUsage() {
-	print("\t USAGE: cuppa latest <URL>")
+func quickUsage() {
+	print("\t USAGE: cuppa quick <URL>")
 }
 
-func newLatestCMD() *flag.FlagSet {
-	scmd := flag.NewFlagSet("latest", flag.ExitOnError)
-	scmd.Usage = latestUsage
+func newQuickCMD() *flag.FlagSet {
+	scmd := flag.NewFlagSet("quick", flag.ExitOnError)
+	scmd.Usage = quickUsage
 	return scmd
 }
 
 /*
-Execute releases for all providers
+Execute quick for all providers
 */
 func Execute(ps []providers.Provider) {
-	w := waterlog.New(os.Stdout, "", log.Ltime)
-	w.SetLevel(level.Info)
-	w.SetFormat(format.Min)
-	lcmd := newLatestCMD()
+	lcmd := newQuickCMD()
 	lcmd.Parse(os.Args[2:])
 	found := false
 	for _, p := range ps {
-		w.Infof("Checking provider '%s':\n", p.Name())
 		name := p.Match(lcmd.Arg(0))
 		if name == "" {
-			w.Warnln("Query does not supported by this provider.")
 			continue
 		}
 		r, s := p.Latest(name)
 		if s != results.OK {
-			w.Warnf("Could not get latest '%s', code: %d\n", name, s)
 			continue
 		}
 		found = true
-		r.Print()
-		w.Goodf("Found Match for provider: '%s'\n", p.Name())
+		r.PrintSimple()
 	}
-	if found {
-		w.Goodln("Done")
-	} else {
-		w.Fatalln("Failed to find latest")
+	if !found {
+		println("Not found.")
 	}
 }

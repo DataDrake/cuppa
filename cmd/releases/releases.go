@@ -28,7 +28,7 @@ import (
 )
 
 func releasesUsage() {
-	print("\t USAGE: cuppa releases <URL> or cuppa releases <NAME>")
+	print("\t USAGE: cuppa releases <URL>")
 }
 
 func newReleaserCMD() *flag.FlagSet {
