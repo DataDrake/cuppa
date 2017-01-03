@@ -34,6 +34,7 @@ func All() []Provider {
 		CPANProvider{},
 		GitHubProvider{},
 		JetBrainsProvider{},
+		PyPiProvider{},
 		RubygemsProvider{},
 	}
 }

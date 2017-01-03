@@ -20,6 +20,7 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 * CPAN
 * Github
 * Jetbrains
+* PyPi
 * RubyGems
 
 ### Planned Providers
@@ -27,7 +28,6 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 * Git
 * Hackage
 * Launchpad
-* PyPi
 * Sourceforge
  
 ## License
