@@ -48,7 +48,9 @@ func (r *Result) Print() {
 	if r.Location != nil {
 		fmt.Printf("%-10s: %s\n", "Location", r.Location.String())
 	}
-	fmt.Printf("%-10s: %s\n", "Published", r.Published.Format(time.RFC3339))
+	if !r.Published.IsZero() {
+		fmt.Printf("%-10s: %s\n", "Published", r.Published.Format(time.RFC3339))
+	}
 	fmt.Println()
 }
 
