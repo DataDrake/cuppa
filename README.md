@@ -26,8 +26,10 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 ### Planned Providers
 * FTP
 * Git
-* Hackage
+* Hackage/Stackage
 * Launchpad
+* NPM
+* RSS
 * Sourceforge
  
 ## License
