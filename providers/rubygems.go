@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
-	"net/url"
 	"regexp"
 	"time"
 )
@@ -39,7 +38,7 @@ func (cr *rubygemsLatest) Convert(name string) *results.Result {
 	r := &results.Result{}
 	r.Name = name
 	r.Version = cr.Version
-	r.Location, _ = url.Parse(fmt.Sprintf(rubygemsSource, name, cr.Version))
+	r.Location = fmt.Sprintf(rubygemsSource, name, cr.Version)
 	return r
 }
 
@@ -57,7 +56,7 @@ func (cr *rubygemsVersion) Convert(name string) *results.Result {
 	r.Name = name
 	r.Version = cr.Number
 	r.Published, _ = time.Parse(time.RFC3339, cr.CreatedAt)
-	r.Location, _ = url.Parse(fmt.Sprintf(rubygemsSource, name, cr.Number))
+	r.Location = fmt.Sprintf(rubygemsSource, name, cr.Number)
 	return r
 }
 

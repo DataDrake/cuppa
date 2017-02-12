@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
-	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -49,7 +48,7 @@ func (cr *cpanRelease) Convert() *results.Result {
 	r.Name = cr.Dist
 	r.Version = cr.Version
 	r.Published, _ = time.Parse(time.RFC3339, cr.Released)
-	r.Location, _ = url.Parse(fmt.Sprintf(cpanSource, cr.Cpanid[0:1], cr.Cpanid[0:2], cr.Cpanid, cr.Archive))
+	r.Location = fmt.Sprintf(cpanSource, cr.Cpanid[0:1], cr.Cpanid[0:2], cr.Cpanid, cr.Archive)
 	return r
 }
 

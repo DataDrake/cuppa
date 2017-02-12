@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
-	"net/url"
 	"regexp"
 	"time"
 )
@@ -51,7 +50,7 @@ func (cr *pypiLatest) Convert(name string) *results.Result {
 	r.Version = cr.Info.Version
 	u := cr.URLs[len(cr.URLs)-1]
 	r.Published, _ = time.Parse(pythonTime, u.UploadTime)
-	r.Location, _ = url.Parse(u.URL)
+	r.Location = u.URL
 	return r
 }
 
@@ -61,7 +60,7 @@ func converURLs(cr []pypiURL, name, version string) *results.Result {
 	r.Version = version
 	u := cr[len(cr)-1]
 	r.Published, _ = time.Parse(pythonTime, u.UploadTime)
-	r.Location, _ = url.Parse(u.URL)
+	r.Location = u.URL
 	return r
 }
 

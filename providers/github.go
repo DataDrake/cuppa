@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
-	"net/url"
 	"regexp"
 	"time"
 )
@@ -47,7 +46,7 @@ func (cr *githubRelease) Convert(name string) *results.Result {
 	r.Name = cr.Name
 	r.Version = githubVersionRegex.FindString(cr.Tag)
 	r.Published, _ = time.Parse(time.RFC3339, cr.CreatedAt)
-	r.Location, _ = url.Parse(fmt.Sprintf(githubSource, name, cr.Tag))
+	r.Location = fmt.Sprintf(githubSource, name, cr.Tag)
 	return r
 }
 

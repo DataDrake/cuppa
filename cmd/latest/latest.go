@@ -41,31 +41,31 @@ func newLatestCMD() *flag.FlagSet {
 Execute releases for all providers
 */
 func Execute(ps []providers.Provider) {
+	lcmd := newLatestCMD()
+	lcmd.Parse(os.Args[2:])
 	w := waterlog.New(os.Stdout, "", log.Ltime)
 	w.SetLevel(level.Info)
 	w.SetFormat(format.Min)
-	lcmd := newLatestCMD()
-	lcmd.Parse(os.Args[2:])
 	found := false
 	for _, p := range ps {
-		w.Infof("Checking provider '%s':\n", p.Name())
+		w.Infof("\033[1m%s\033[21m checking for match:\n", p.Name())
 		name := p.Match(lcmd.Arg(0))
 		if name == "" {
-			w.Warnln("Query does not supported by this provider.")
+			w.Warnf("\033[1m%s\033[21m does not match.\n", p.Name())
 			continue
 		}
 		r, s := p.Latest(name)
 		if s != results.OK {
-			w.Warnf("Could not get latest '%s', code: %d\n", name, s)
+			w.Warnf("Could not get latest \033[1m%s\033[21m, code: %d\n", name, s)
 			continue
 		}
 		found = true
 		r.Print()
-		w.Goodf("Found Match for provider: '%s'\n", p.Name())
+		w.Goodf("\033[1m%s\033[21m match(es) found.\n", p.Name())
 	}
 	if found {
 		w.Goodln("Done")
 	} else {
-		w.Fatalln("Failed to find latest")
+		w.Fatalln("No release found.")
 	}
 }

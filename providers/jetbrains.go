@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
-	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -65,11 +64,11 @@ func (jb jetbrainsRelease) Convert() *results.Result {
 	r.Version = jb.Version
 	r.Published, _ = time.Parse("2006-01-02", jb.Date)
 	if d, ok := jb.Downloads["linuxWithoutJDK"]; ok {
-		r.Location, _ = url.Parse(d.Link)
+		r.Location = d.Link
 		return r
 	}
 	if d, ok := jb.Downloads["linux"]; ok {
-		r.Location, _ = url.Parse(d.Link)
+		r.Location = d.Link
 		return r
 	}
 	return r

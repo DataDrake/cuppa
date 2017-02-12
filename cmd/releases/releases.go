@@ -41,17 +41,17 @@ func newReleaserCMD() *flag.FlagSet {
 Execute releases for all providers
 */
 func Execute(ps []providers.Provider) {
+	rcmd := newReleaserCMD()
+	rcmd.Parse(os.Args[2:])
 	w := waterlog.New(os.Stdout, "", log.Ltime)
 	w.SetLevel(level.Info)
 	w.SetFormat(format.Min)
-	rcmd := newReleaserCMD()
-	rcmd.Parse(os.Args[2:])
 	found := false
 	for _, p := range ps {
 		w.Infof("Checking provider '%s':\n", p.Name())
 		name := p.Match(rcmd.Arg(0))
 		if name == "" {
-			w.Warnln("Query does not supported by this provider.")
+			w.Warnf("Provider '%s' does not match.\n", p.Name())
 			continue
 		}
 		rs, s := p.Releases(name)
@@ -61,11 +61,11 @@ func Execute(ps []providers.Provider) {
 		}
 		found = true
 		rs.PrintAll()
-		w.Goodf("Found Match for provider: '%s'\n", p.Name())
+		w.Goodf("Provider '%s' found match(es).\n", p.Name())
 	}
 	if found {
 		w.Goodln("Done")
 	} else {
-		w.Fatalln("Failed to find latest")
+		w.Fatalln("No releases found.")
 	}
 }

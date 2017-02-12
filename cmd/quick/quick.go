@@ -53,6 +53,7 @@ func Execute(ps []providers.Provider) {
 		r.PrintSimple()
 	}
 	if !found {
-		println("Not found.")
+		println("No release found.")
+		os.Exit(1)
 	}
 }

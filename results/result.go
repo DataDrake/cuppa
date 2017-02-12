@@ -18,7 +18,6 @@ package results
 
 import (
 	"fmt"
-	"net/url"
 	"time"
 )
 
@@ -28,14 +27,14 @@ Result contains the information for a single query result
 type Result struct {
 	Name      string
 	Version   string
-	Location  *url.URL
+	Location  string
 	Published time.Time
 }
 
 /*
 NewResult creates a result with the specified values
 */
-func NewResult(name, version string, location *url.URL, published time.Time) *Result {
+func NewResult(name, version string, location string, published time.Time) *Result {
 	return &Result{name, version, location, published}
 }
 
@@ -45,8 +44,8 @@ Print pretty-prints a single Result
 func (r *Result) Print() {
 	fmt.Printf("%-10s: %s\n", "Name", r.Name)
 	fmt.Printf("%-10s: %s\n", "Version", r.Version)
-	if r.Location != nil {
-		fmt.Printf("%-10s: %s\n", "Location", r.Location.String())
+	if r.Location != "" {
+		fmt.Printf("%-10s: %s\n", "Location", r.Location)
 	}
 	if !r.Published.IsZero() {
 		fmt.Printf("%-10s: %s\n", "Published", r.Published.Format(time.RFC3339))
@@ -58,5 +57,5 @@ func (r *Result) Print() {
 PrintSimple only prints the version and the location of the latest release
 */
 func (r *Result) PrintSimple() {
-	fmt.Printf("%s %s\n", r.Version, r.Location.String())
+	fmt.Printf("%s %s\n", r.Version, r.Location)
 }
