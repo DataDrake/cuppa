@@ -48,10 +48,10 @@ func Execute(ps []providers.Provider) {
 	w.SetFormat(format.Min)
 	found := false
 	for _, p := range ps {
-		w.Infof("Checking provider '%s':\n", p.Name())
+		w.Infof("\033[1m%s\033[21m checking for match:\n", p.Name())
 		name := p.Match(rcmd.Arg(0))
 		if name == "" {
-			w.Warnf("Provider '%s' does not match.\n", p.Name())
+			w.Warnf("\033[1m%s\033[21m does not match.\n", p.Name())
 			continue
 		}
 		rs, s := p.Releases(name)
@@ -61,7 +61,7 @@ func Execute(ps []providers.Provider) {
 		}
 		found = true
 		rs.PrintAll()
-		w.Goodf("Provider '%s' found match(es).\n", p.Name())
+		w.Goodf("\033[1m%s\033[21m match(es) found.\n", p.Name())
 	}
 	if found {
 		w.Goodln("Done")
