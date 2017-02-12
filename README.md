@@ -28,13 +28,20 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 * Git
 * Hackage/Stackage
 * Launchpad
-* NPM
+
+### Stetch Goal Providers
 * RSS
 * Sourceforge
+
+Both of these will require some level of scraping to get useful info.
+
+### Unsupported Providers
+* NPM
+  Completely pointless as this will just pivot to another provider
  
 ## License
  
-Copyright © 2016 Bryan T. Meyers <bmeyers@datadrake.com>
+Copyright © 2017 Bryan T. Meyers <bmeyers@datadrake.com>
  
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
