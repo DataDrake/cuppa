@@ -28,22 +28,22 @@ import (
 )
 
 // Latest fulfills the "latest" subcommand
-type Latest struct {}
+type Latest struct{}
 
 // Name provides the name of this command
 func (l Latest) Name() string {
-    return "latest"
+	return "latest"
 }
 
 // Short provides a quick description of this command
 func (l Latest) Short() string {
-    return "Get the latest stable release"
+	return "Get the latest stable release"
 }
 
 // Usage prints a general usage statement
 func (l Latest) Usage() {
 	print("USAGE: cuppa latest <URL>\n\n")
-    l.Flags().PrintDefaults()
+	l.Flags().PrintDefaults()
 }
 
 // Flags builds the flagset for this command
@@ -57,7 +57,7 @@ func (l Latest) Flags() *flag.FlagSet {
 Execute releases for all providers
 */
 func (l Latest) Execute() {
-    ps := providers.All()
+	ps := providers.All()
 	flags := l.Flags()
 	flags.Parse(os.Args[2:])
 	w := waterlog.New(os.Stdout, "", log.Ltime)

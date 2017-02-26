@@ -1,31 +1,31 @@
 package cmd
 
 import (
-    "fmt"
+	"fmt"
 )
 
 // CMD is a common interface for all CLI commands
 type CMD interface {
-    Execute()
-    Name() string
-    Short() string
-    Usage()
+	Execute()
+	Name() string
+	Short() string
+	Usage()
 }
 
 // All of the commands for this application
-var All = []CMD {
-    Help{},
-    Latest{},
-    Quick{},
-    Releases{},
+var All = []CMD{
+	Help{},
+	Latest{},
+	Quick{},
+	Releases{},
 }
 
-// Print the usage for this program
+// Usage prints the usage for this program
 func Usage() {
-    print("USAGE: cuppa CMD [OPTIONS]\n\n")
-    print("COMMANDS:\n\n")
-    for _,c := range All {
-        fmt.Printf("%12s - %s\n", c.Name(), c.Short())
-    }
-    print("\n")
+	print("USAGE: cuppa CMD [OPTIONS]\n\n")
+	print("COMMANDS:\n\n")
+	for _, c := range All {
+		fmt.Printf("%12s - %s\n", c.Name(), c.Short())
+	}
+	print("\n")
 }

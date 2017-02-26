@@ -24,22 +24,22 @@ import (
 )
 
 // Quick fulfills the "Quick" subcommand
-type Quick struct {}
+type Quick struct{}
 
 // Name provides the name of this command
 func (q Quick) Name() string {
-    return "quick"
+	return "quick"
 }
 
 // Short prints a quick description of this command
 func (q Quick) Short() string {
-    return "Get the version and location of the most recent release"
+	return "Get the version and location of the most recent release"
 }
 
 // Usage prints a simple description of how to use this command
 func (q Quick) Usage() {
 	print("USAGE: cuppa quick <URL>\n\n")
-    q.Flags().PrintDefaults()
+	q.Flags().PrintDefaults()
 }
 
 // Flags builds the flagset for this command
@@ -53,7 +53,7 @@ func (q Quick) Flags() *flag.FlagSet {
 Execute quick for all providers
 */
 func (q Quick) Execute() {
-    ps := providers.All()
+	ps := providers.All()
 	flags := q.Flags()
 	flags.Parse(os.Args[2:])
 	found := false

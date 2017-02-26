@@ -28,15 +28,15 @@ func main() {
 		os.Exit(1)
 	}
 
-    found := false
-    for _,c := range cmd.All {
-        if os.Args[1] == c.Name() {
-            c.Execute()
-            found = true
-            break
-        }
-    }
-    if !found {
+	found := false
+	for _, c := range cmd.All {
+		if os.Args[1] == c.Name() {
+			c.Execute()
+			found = true
+			break
+		}
+	}
+	if !found {
 		cmd.Usage()
 		os.Exit(1)
 	}

@@ -28,11 +28,11 @@ import (
 )
 
 // Releases fulfills the "release" subcommand
-type Releases struct {}
+type Releases struct{}
 
 // Name provides the name of this command
 func (r Releases) Name() string {
-    return "releases"
+	return "releases"
 }
 
 // Flags builds a flagset for this command
@@ -43,21 +43,21 @@ func (r Releases) Flags() *flag.FlagSet {
 }
 
 // Short prints a quick description of this command
-func (r Releases) Short() string{
-    return "Get all stable releases"
+func (r Releases) Short() string {
+	return "Get all stable releases"
 }
 
 // Usage prints the usage for this command
 func (r Releases) Usage() {
 	print("USAGE: cuppa releases <URL>\n\n")
-    r.Flags().PrintDefaults()
+	r.Flags().PrintDefaults()
 }
 
 /*
 Execute releases for all providers
 */
 func (r Releases) Execute() {
-    ps := providers.All()
+	ps := providers.All()
 	flags := r.Flags()
 	flags.Parse(os.Args[2:])
 	w := waterlog.New(os.Stdout, "", log.Ltime)

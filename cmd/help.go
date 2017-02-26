@@ -22,22 +22,22 @@ import (
 )
 
 // Help fulfills the "help" subcommand
-type Help struct {}
+type Help struct{}
 
 // Name provides the name of this command
 func (h Help) Name() string {
-    return "help"
+	return "help"
 }
 
 // Short provides a quick description of this command
 func (h Help) Short() string {
-    return "Get help with a specific subcomand"
+	return "Get help with a specific subcomand"
 }
 
 // Usage prints a general usage statement
 func (h Help) Usage() {
 	print("USAGE: cuppa help <subcomand>\n\n")
-    h.Flags().PrintDefaults()
+	h.Flags().PrintDefaults()
 }
 
 // Flags builds the flagset for this command
@@ -52,24 +52,24 @@ Execute releases for all providers
 */
 func (h Help) Execute() {
 
-    flags := h.Flags()
-    flags.Parse(os.Args[2:])
+	flags := h.Flags()
+	flags.Parse(os.Args[2:])
 
-    if flags.NArg() != 1 {
-        h.Usage()
-        os.Exit(1)
-    }
+	if flags.NArg() != 1 {
+		h.Usage()
+		os.Exit(1)
+	}
 
-    found := false
-    for _,c := range All {
-        if flags.Arg(0) == c.Name() {
-            c.Usage()
-            found = true
-            break
-        }
-    }
-    if !found {
-        h.Usage()
-        os.Exit(1)
-    }
+	found := false
+	for _, c := range All {
+		if flags.Arg(0) == c.Name() {
+			c.Usage()
+			found = true
+			break
+		}
+	}
+	if !found {
+		h.Usage()
+		os.Exit(1)
+	}
 }
