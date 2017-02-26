@@ -27,7 +27,6 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 ### Planned Providers
 * FTP
 * Git
-* Stackage
 * Launchpad
 
 ### Stetch Goal Providers
@@ -39,6 +38,8 @@ Both of these will require some level of scraping to get useful info.
 ### Unsupported Providers
 * NPM
   Completely pointless as this will just pivot to another provider
+* Stackage
+  Not really in scope for this project and they seem to be missing a web API
  
 ## License
  
