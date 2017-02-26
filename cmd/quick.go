@@ -38,7 +38,8 @@ func (q Quick) Short() string {
 
 // Usage prints a simple description of how to use this command
 func (q Quick) Usage() {
-	print("\t USAGE: cuppa quick <URL>")
+	print("USAGE: cuppa quick <URL>\n\n")
+    q.Flags().PrintDefaults()
 }
 
 // Flags builds the flagset for this command

@@ -14,6 +14,7 @@ type CMD interface {
 
 // All of the commands for this application
 var All = []CMD {
+    Help{},
     Latest{},
     Quick{},
     Releases{},

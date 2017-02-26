@@ -42,7 +42,8 @@ func (l Latest) Short() string {
 
 // Usage prints a general usage statement
 func (l Latest) Usage() {
-	print("\t USAGE: cuppa latest <URL>")
+	print("USAGE: cuppa latest <URL>\n\n")
+    l.Flags().PrintDefaults()
 }
 
 // Flags builds the flagset for this command

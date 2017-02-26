@@ -32,7 +32,7 @@ type Releases struct {}
 
 // Name provides the name of this command
 func (r Releases) Name() string {
-    return "release"
+    return "releases"
 }
 
 // Flags builds a flagset for this command
@@ -49,7 +49,8 @@ func (r Releases) Short() string{
 
 // Usage prints the usage for this command
 func (r Releases) Usage() {
-	print("\t USAGE: cuppa releases <URL>")
+	print("USAGE: cuppa releases <URL>\n\n")
+    r.Flags().PrintDefaults()
 }
 
 /*
