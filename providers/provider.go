@@ -33,6 +33,7 @@ func All() []Provider {
 	return []Provider{
 		CPANProvider{},
 		GitHubProvider{},
+		HackageProvider{},
 		JetBrainsProvider{},
 		PyPiProvider{},
 		RubygemsProvider{},

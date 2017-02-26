@@ -19,6 +19,7 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 ### Supported Providers
 * CPAN
 * Github
+* Hackage
 * Jetbrains
 * PyPi
 * RubyGems
@@ -26,7 +27,7 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 ### Planned Providers
 * FTP
 * Git
-* Hackage/Stackage
+* Stackage
 * Launchpad
 
 ### Stetch Goal Providers
