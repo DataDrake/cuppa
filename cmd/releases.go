@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package releases
+package cmd
 
 import (
 	"flag"
@@ -27,29 +27,45 @@ import (
 	"os"
 )
 
-func releasesUsage() {
-	print("\t USAGE: cuppa releases <URL>")
+// Releases fulfills the "release" subcommand
+type Releases struct {}
+
+// Name provides the name of this command
+func (r Releases) Name() string {
+    return "release"
 }
 
-func newReleaserCMD() *flag.FlagSet {
+// Flags builds a flagset for this command
+func (r Releases) Flags() *flag.FlagSet {
 	rcmd := flag.NewFlagSet("releases", flag.ExitOnError)
-	rcmd.Usage = releasesUsage
+	rcmd.Usage = r.Usage
 	return rcmd
+}
+
+// Short prints a quick description of this command
+func (r Releases) Short() string{
+    return "Get all stable releases"
+}
+
+// Usage prints the usage for this command
+func (r Releases) Usage() {
+	print("\t USAGE: cuppa releases <URL>")
 }
 
 /*
 Execute releases for all providers
 */
-func Execute(ps []providers.Provider) {
-	rcmd := newReleaserCMD()
-	rcmd.Parse(os.Args[2:])
+func (r Releases) Execute() {
+    ps := providers.All()
+	flags := r.Flags()
+	flags.Parse(os.Args[2:])
 	w := waterlog.New(os.Stdout, "", log.Ltime)
 	w.SetLevel(level.Info)
 	w.SetFormat(format.Min)
 	found := false
 	for _, p := range ps {
 		w.Infof("\033[1m%s\033[21m checking for match:\n", p.Name())
-		name := p.Match(rcmd.Arg(0))
+		name := p.Match(flags.Arg(0))
 		if name == "" {
 			w.Warnf("\033[1m%s\033[21m does not match.\n", p.Name())
 			continue

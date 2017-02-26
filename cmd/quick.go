@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package quick
+package cmd
 
 import (
 	"flag"
@@ -23,25 +23,41 @@ import (
 	"os"
 )
 
-func quickUsage() {
+// Quick fulfills the "Quick" subcommand
+type Quick struct {}
+
+// Name provides the name of this command
+func (q Quick) Name() string {
+    return "quick"
+}
+
+// Short prints a quick description of this command
+func (q Quick) Short() string {
+    return "Get the version and location of the most recent release"
+}
+
+// Usage prints a simple description of how to use this command
+func (q Quick) Usage() {
 	print("\t USAGE: cuppa quick <URL>")
 }
 
-func newQuickCMD() *flag.FlagSet {
-	scmd := flag.NewFlagSet("quick", flag.ExitOnError)
-	scmd.Usage = quickUsage
-	return scmd
+// Flags builds the flagset for this command
+func (q Quick) Flags() *flag.FlagSet {
+	qcmd := flag.NewFlagSet("quick", flag.ExitOnError)
+	qcmd.Usage = q.Usage
+	return qcmd
 }
 
 /*
 Execute quick for all providers
 */
-func Execute(ps []providers.Provider) {
-	lcmd := newQuickCMD()
-	lcmd.Parse(os.Args[2:])
+func (q Quick) Execute() {
+    ps := providers.All()
+	flags := q.Flags()
+	flags.Parse(os.Args[2:])
 	found := false
 	for _, p := range ps {
-		name := p.Match(lcmd.Arg(0))
+		name := p.Match(flags.Arg(0))
 		if name == "" {
 			continue
 		}

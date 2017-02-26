@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package latest
+package cmd
 
 import (
 	"flag"
@@ -27,29 +27,45 @@ import (
 	"os"
 )
 
-func latestUsage() {
+// Latest fulfills the "latest" subcommand
+type Latest struct {}
+
+// Name provides the name of this command
+func (l Latest) Name() string {
+    return "latest"
+}
+
+// Short provides a quick description of this command
+func (l Latest) Short() string {
+    return "Get the latest stable release"
+}
+
+// Usage prints a general usage statement
+func (l Latest) Usage() {
 	print("\t USAGE: cuppa latest <URL>")
 }
 
-func newLatestCMD() *flag.FlagSet {
+// Flags builds the flagset for this command
+func (l Latest) Flags() *flag.FlagSet {
 	scmd := flag.NewFlagSet("latest", flag.ExitOnError)
-	scmd.Usage = latestUsage
+	scmd.Usage = l.Usage
 	return scmd
 }
 
 /*
 Execute releases for all providers
 */
-func Execute(ps []providers.Provider) {
-	lcmd := newLatestCMD()
-	lcmd.Parse(os.Args[2:])
+func (l Latest) Execute() {
+    ps := providers.All()
+	flags := l.Flags()
+	flags.Parse(os.Args[2:])
 	w := waterlog.New(os.Stdout, "", log.Ltime)
 	w.SetLevel(level.Info)
 	w.SetFormat(format.Min)
 	found := false
 	for _, p := range ps {
 		w.Infof("\033[1m%s\033[21m checking for match:\n", p.Name())
-		name := p.Match(lcmd.Arg(0))
+		name := p.Match(flags.Arg(0))
 		if name == "" {
 			w.Warnf("\033[1m%s\033[21m does not match.\n", p.Name())
 			continue
