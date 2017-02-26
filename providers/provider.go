@@ -35,6 +35,7 @@ func All() []Provider {
 		GitHubProvider{},
 		HackageProvider{},
 		JetBrainsProvider{},
+		LaunchpadProvider{},
 		PyPiProvider{},
 		RubygemsProvider{},
 	}

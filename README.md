@@ -21,13 +21,13 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 * Github
 * Hackage
 * Jetbrains
+* Launchpad
 * PyPi
 * RubyGems
 
 ### Planned Providers
 * FTP
 * Git
-* Launchpad
 
 ### Stetch Goal Providers
 * RSS

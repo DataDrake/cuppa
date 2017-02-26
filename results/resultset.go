@@ -48,6 +48,13 @@ func (rs *ResultSet) First() *Result {
 }
 
 /*
+Last retrieves the first result from a query
+*/
+func (rs *ResultSet) Last() *Result {
+	return rs.results[len(rs.results)-1]
+}
+
+/*
 PrintAll pretty-prints an entire ResultSet
 */
 func (rs *ResultSet) PrintAll() {
