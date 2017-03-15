@@ -22,13 +22,14 @@ import (
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 )
 
 var githubAPILatest = "https://api.github.com/repos/%s/releases/latest"
 var githubAPIReleases = "https://api.github.com/repos/%s/releases"
 var githubSource = "https://github.com/%s/archive/%s.tar.gz"
-var githubRegex = regexp.MustCompile("https?://github.com/(.*)/.*?.tar.gz")
+var githubRegex = regexp.MustCompile("https?://github.com/(.*)/archive/[^/]*?.tar.gz")
 var githubVersionRegex = regexp.MustCompile("(?:\\d+\\.)*\\d+\\w*")
 
 type githubRelease struct {
@@ -63,6 +64,33 @@ func (crs *githubResultSet) Convert(name string) *results.ResultSet {
 	return rs
 }
 
+type githubTag struct {
+	Ref string `json:"ref"`
+}
+
+func (ts *githubTags) Convert(name string) *results.ResultSet {
+	rs := results.NewResultSet(name)
+	for _, t := range *ts {
+		r := t.Convert(name)
+		if r != nil {
+			rs.AddResult(r)
+		}
+	}
+	return rs
+}
+
+type githubTags []githubTag
+
+func (t *githubTag) Convert(name string) *results.Result {
+	r := &results.Result{}
+	pieces := strings.Split(name, "/")
+	r.Name = pieces[len(pieces)-1]
+	pieces = strings.Split(t.Ref, "/")
+	r.Version = pieces[len(pieces)-1]
+	r.Location = fmt.Sprintf(githubSource, name, r.Version)
+	return r
+}
+
 /*
 GitHubProvider is the upstream provider interface for github
 */
@@ -73,6 +101,7 @@ Latest finds the newest release for a github package
 */
 func (c GitHubProvider) Latest(name string) (r *results.Result, s results.Status) {
 	//Query the API
+	fmt.Println(fmt.Sprintf(githubAPILatest, name))
 	resp, err := http.Get(fmt.Sprintf(githubAPILatest, name))
 	if err != nil {
 		panic(err.Error())
