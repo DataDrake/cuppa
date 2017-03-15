@@ -2,9 +2,9 @@
 
 include Makefile.waterlog
 
-GOCC     = go
-
 GOPATH   = $(shell pwd)/build
+GOCC     = GOPATH=$(GOPATH) go
+
 GOBIN    = build/bin
 GOSRC    = build/src
 PROJROOT = $(GOSRC)/github.com/DataDrake
