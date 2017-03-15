@@ -41,6 +41,13 @@ func (rs *ResultSet) AddResult(r *Result) {
 }
 
 /*
+Empty checks if there were no results
+*/
+func (rs *ResultSet) Empty() bool {
+	return len(rs.results) == 0
+}
+
+/*
 First retrieves the first result from a query
 */
 func (rs *ResultSet) First() *Result {
