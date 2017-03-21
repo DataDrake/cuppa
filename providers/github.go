@@ -30,7 +30,7 @@ var githubAPILatest = "https://api.github.com/repos/%s/releases/latest"
 var githubAPIReleases = "https://api.github.com/repos/%s/releases"
 var githubAPITags = "https://api.github.com/repos/%s/git/refs/tags"
 var githubSource = "https://github.com/%s/archive/%s.tar.gz"
-var githubRegex = regexp.MustCompile("https?://github.com/(.*)/archive/[^/]*?.tar.gz")
+var githubRegex = regexp.MustCompile("https?://github.com/([^/]*/[^/]*)/.*/[^/]*.tar.gz")
 var githubVersionRegex = regexp.MustCompile("(?:\\d+\\.)*\\d+\\w*")
 
 type githubRelease struct {
