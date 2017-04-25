@@ -211,7 +211,7 @@ func (c GitHubProvider) Releases(name string) (rs *results.ResultSet, s results.
 	default:
 		s = results.Unavailable
 	}
-    println(s)
+	println(s)
 
 	//Fail if not OK
 	if s != results.OK {
@@ -225,7 +225,7 @@ func (c GitHubProvider) Releases(name string) (rs *results.ResultSet, s results.
 		panic(err.Error())
 	}
 	if len(crs) == 0 {
-        rs, s = getTags(name)
+		rs, s = getTags(name)
 		return
 	}
 	rs = crs.Convert(name)
