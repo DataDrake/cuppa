@@ -35,13 +35,14 @@ var releaseCode = map[string]string{
 	"phpstorm":             "PS",
 	"pycharm-professional": "PCP",
 	"pycharm-ce":           "PCC",
+	"pycharm-community":    "PCC",
 	"rubymine":             "RM",
 	"webstorm":             "WS",
 }
 
 var jetbrainsAPI = "https://data.services.jetbrains.com/products/releases?code=%s"
 var jetbrainsAPILatest = "https://data.services.jetbrains.com/products/releases?code=%s&latest=true"
-var jetbrainsRegex = regexp.MustCompile("https://download.jetbrains.com/.+?/(.+)-\\d.*")
+var jetbrainsRegex = regexp.MustCompile("https?://download.jetbrains.com/.+?/(.+?)-\\d.*")
 
 type jetbrainsDownload struct {
 	ChecksumLink string `json:"checksumLink"`
