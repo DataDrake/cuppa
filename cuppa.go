@@ -23,6 +23,9 @@ import (
 
 func main() {
 
+	// Set Description
+	cmd.SetShort("Comprehensive Upstream Provider Polling Assistant")
+
 	// Setup the Sub-Commands
 	cmd.RegisterCMD("help", cmd.Help{})
 	cmd.RegisterCMD("latest", cmd.Latest{})

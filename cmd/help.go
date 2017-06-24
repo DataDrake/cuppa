@@ -31,7 +31,7 @@ func (h Help) Short() string {
 
 // Usage prints a general usage statement
 func (h Help) Usage() {
-	print("USAGE: cuppa help <subcomand>\n\n")
+	print("USAGE: " + os.Args[0] + " help <subcomand>\n\n")
 	print("DESCRIPTION: " + h.Short() + "\n\n")
 	h.Flags().PrintDefaults()
 }

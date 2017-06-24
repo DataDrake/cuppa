@@ -44,7 +44,7 @@ func (r Releases) Short() string {
 
 // Usage prints the usage for this command
 func (r Releases) Usage() {
-	print("USAGE: cuppa releases <URL>\n\n")
+	print("USAGE: " + os.Args[0] + " releases <URL>\n\n")
 	print("DESCRIPTION: " + r.Short() + "\n\n")
 	r.Flags().PrintDefaults()
 }

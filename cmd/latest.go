@@ -37,7 +37,7 @@ func (l Latest) Short() string {
 
 // Usage prints a general usage statement
 func (l Latest) Usage() {
-	print("USAGE: cuppa latest <URL>\n\n")
+	print("USAGE: " + os.Args[0] + " latest <URL>\n\n")
 	print("DESCRIPTION: " + l.Short() + "\n\n")
 	l.Flags().PrintDefaults()
 }

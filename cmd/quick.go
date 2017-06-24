@@ -33,7 +33,7 @@ func (q Quick) Short() string {
 
 // Usage prints a simple description of how to use this command
 func (q Quick) Usage() {
-	print("USAGE: cuppa quick <URL>\n\n")
+	print("USAGE: " + os.Args[0] + " quick <URL>\n\n")
 	print("DESCRIPTION: " + q.Short() + "\n\n")
 	q.Flags().PrintDefaults()
 }

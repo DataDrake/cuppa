@@ -23,8 +23,16 @@ type CMD interface {
 	Usage()
 }
 
+// Short decription of this utility
+var short string
+
 // All of the commands for this application
 var subcommands map[string]CMD
+
+// SetShort assigns a short description to this application
+func SetShort(s string) {
+	short = s
+}
 
 // RegisterCMD add a sub-command to this program
 func RegisterCMD(name string, c CMD) {
@@ -56,7 +64,10 @@ func Run() {
 
 // Usage prints the usage for this program
 func Usage() {
-	print("USAGE: cuppa CMD [OPTIONS]\n\n")
+	print("USAGE: " + os.Args[0] + " CMD [OPTIONS] <ARGS>\n\n")
+	if len(short) > 0 {
+		print("DESCRIPTION: " + short + "\n\n")
+	}
 	print("COMMANDS:\n\n")
 	var keys []string
 	i := -1
