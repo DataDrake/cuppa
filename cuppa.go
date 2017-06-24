@@ -23,23 +23,15 @@ import (
 
 func main() {
 
-	if len(os.Args) < 2 {
-		cmd.Usage()
-		os.Exit(1)
-	}
+	// Setup the Sub-Commands
+	cmd.RegisterCMD("help", cmd.Help{})
+	cmd.RegisterCMD("latest", cmd.Latest{})
+	cmd.RegisterCMD("releases", cmd.Releases{})
+	cmd.RegisterCMD("quick", cmd.Quick{})
 
-	found := false
-	for _, c := range cmd.All {
-		if os.Args[1] == c.Name() {
-			c.Execute()
-			found = true
-			break
-		}
-	}
-	if !found {
-		cmd.Usage()
-		os.Exit(1)
-	}
+	// Run the program
+	cmd.Run()
 
+	// Terminate Gracefully
 	os.Exit(0)
 }

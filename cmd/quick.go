@@ -26,11 +26,6 @@ import (
 // Quick fulfills the "Quick" subcommand
 type Quick struct{}
 
-// Name provides the name of this command
-func (q Quick) Name() string {
-	return "quick"
-}
-
 // Short prints a quick description of this command
 func (q Quick) Short() string {
 	return "Get the version and location of the most recent release"
@@ -39,6 +34,7 @@ func (q Quick) Short() string {
 // Usage prints a simple description of how to use this command
 func (q Quick) Usage() {
 	print("USAGE: cuppa quick <URL>\n\n")
+	print("DESCRIPTION: " + q.Short() + "\n\n")
 	q.Flags().PrintDefaults()
 }
 
@@ -52,10 +48,15 @@ func (q Quick) Flags() *flag.FlagSet {
 /*
 Execute quick for all providers
 */
-func (q Quick) Execute() {
+func (q Quick) Execute() int {
 	ps := providers.All()
 	flags := q.Flags()
 	flags.Parse(os.Args[2:])
+
+	if flags.NArg() != 1 {
+		return USAGE
+	}
+
 	found := false
 	for _, p := range ps {
 		name := p.Match(flags.Arg(0))
@@ -71,6 +72,7 @@ func (q Quick) Execute() {
 	}
 	if !found {
 		println("No release found.")
-		os.Exit(1)
+		return FAIL
 	}
+	return GOOD
 }

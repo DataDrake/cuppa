@@ -30,11 +30,6 @@ import (
 // Releases fulfills the "release" subcommand
 type Releases struct{}
 
-// Name provides the name of this command
-func (r Releases) Name() string {
-	return "releases"
-}
-
 // Flags builds a flagset for this command
 func (r Releases) Flags() *flag.FlagSet {
 	rcmd := flag.NewFlagSet("releases", flag.ExitOnError)
@@ -50,16 +45,22 @@ func (r Releases) Short() string {
 // Usage prints the usage for this command
 func (r Releases) Usage() {
 	print("USAGE: cuppa releases <URL>\n\n")
+	print("DESCRIPTION: " + r.Short() + "\n\n")
 	r.Flags().PrintDefaults()
 }
 
 /*
 Execute releases for all providers
 */
-func (r Releases) Execute() {
+func (r Releases) Execute() int {
 	ps := providers.All()
 	flags := r.Flags()
 	flags.Parse(os.Args[2:])
+
+	if flags.NArg() != 1 {
+		return USAGE
+	}
+
 	w := waterlog.New(os.Stdout, "", log.Ltime)
 	w.SetLevel(level.Info)
 	w.SetFormat(format.Min)
@@ -85,4 +86,5 @@ func (r Releases) Execute() {
 	} else {
 		w.Fatalln("No releases found.")
 	}
+	return GOOD
 }

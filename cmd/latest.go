@@ -30,11 +30,6 @@ import (
 // Latest fulfills the "latest" subcommand
 type Latest struct{}
 
-// Name provides the name of this command
-func (l Latest) Name() string {
-	return "latest"
-}
-
 // Short provides a quick description of this command
 func (l Latest) Short() string {
 	return "Get the latest stable release"
@@ -43,6 +38,7 @@ func (l Latest) Short() string {
 // Usage prints a general usage statement
 func (l Latest) Usage() {
 	print("USAGE: cuppa latest <URL>\n\n")
+	print("DESCRIPTION: " + l.Short() + "\n\n")
 	l.Flags().PrintDefaults()
 }
 
@@ -56,10 +52,15 @@ func (l Latest) Flags() *flag.FlagSet {
 /*
 Execute releases for all providers
 */
-func (l Latest) Execute() {
+func (l Latest) Execute() int {
 	ps := providers.All()
 	flags := l.Flags()
 	flags.Parse(os.Args[2:])
+
+	if flags.NArg() != 1 {
+		return USAGE
+	}
+
 	w := waterlog.New(os.Stdout, "", log.Ltime)
 	w.SetLevel(level.Info)
 	w.SetFormat(format.Min)
@@ -85,4 +86,5 @@ func (l Latest) Execute() {
 	} else {
 		w.Fatalln("No release found.")
 	}
+	return GOOD
 }
