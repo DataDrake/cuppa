@@ -6,6 +6,13 @@ GOCC     = GOPATH=$(GOPATH) go
 GOBIN    = build/bin
 GOSRC    = build/src
 PROJROOT = $(GOSRC)/github.com/DataDrake
+PKGNAME  = cuppa
+SUBPKGS  = cmd \
+           providers \
+           results
+
+DEPS     = github.com/DataDrake/cli-ng \
+           github.com/DataDrake/waterlog
 
 DESTDIR ?=
 PREFIX  ?= /usr
@@ -15,7 +22,7 @@ all: build
 
 build: setup
 	@$(call stage,BUILD)
-	@$(GOCC) install -v github.com/DataDrake/cuppa
+	@$(GOCC) install -v -ldflags '-s -w' github.com/DataDrake/$(PKGNAME)
 	@$(call pass,BUILD)
 
 setup:
@@ -27,20 +34,25 @@ setup:
 	@$(call task,Setting up project root...)
 	@mkdir -p $(PROJROOT)
 	@$(call task,Setting up symlinks...)
-	@if [ ! -d $(PROJROOT)/cuppa ]; then ln -s $(shell pwd) $(PROJROOT)/cuppa; fi
+	@if [ ! -d $(PROJROOT)/$(PKGNAME) ]; then ln -s $(shell pwd) $(PROJROOT)/$(PKGNAME); fi
 	@$(call task,Getting dependencies...)
-	@$(GOCC) get github.com/DataDrake/waterlog
+	@for d in $(DEPS); do $(GOCC) get $$d || exit 1; done
 	@$(call pass,SETUP)
+
+test: build
+	@$(call stage,TEST)
+	@for d in $(SUBPKGS); do $(GOCC) test -cover ./$$d/... || exit 1; done
+	@$(call pass,TEST)
 
 validate: golint-setup
 	@$(call stage,FORMAT)
-	@$(GOCC) fmt -x ./...
+	@for d in $(SUBPKGS); do $(GOCC) fmt -x ./$$d/...|| exit 1; done || $(GOCC) fmt -x $(PKGNAME).go
 	@$(call pass,FORMAT)
 	@$(call stage,VET)
-	@$(GOCC) vet -x ./...
+	@for d in $(SUBPKGS); do $(GOCC) vet -x ./$$d/...|| exit 1; done || $(GOCC) vet -x $(PKGNAME).go
 	@$(call pass,VET)
 	@$(call stage,LINT)
-	@$(GOBIN)/golint -set_exit_status ./...
+	@for d in $(SUBPKGS); do $(GOBIN)/golint -set_exit_status ./$$d/... || exit 1; done || $(GOBIN)/golint -set_exit_status $(PKGNAME).go || exit 1;
 	@$(call pass,LINT)
 
 golint-setup:
@@ -53,18 +65,18 @@ golint-setup:
 
 install:
 	@$(call stage,INSTALL)
-	install -D -m 00755 $(GOBIN)/cuppa $(DESTDIR)$(BINDIR)/cuppa
+	install -D -m 00755 $(GOBIN)/$(PKGNAME) $(DESTDIR)$(BINDIR)/$(PKGNAME)
 	@$(call pass,INSTALL)
 
 uninstall:
 	@$(call stage,UNINSTALL)
-	rm -f $(DESTDIR)$(BINDIR)/cuppa
+	rm -f $(DESTDIR)$(BINDIR)/$(PKGNAME)
 	@$(call pass,UNINSTALL)
 
 clean:
 	@$(call stage,CLEAN)
 	@$(call task,Removing symlinks...)
-	@unlink $(PROJROOT)/cuppa
+	@unlink $(PROJROOT)/$(PKGNAME)
 	@$(call task,Removing build directory...)
 	@rm -rf build
 	@$(call pass,CLEAN)
