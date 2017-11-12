@@ -17,24 +17,9 @@
 package main
 
 import (
-	"github.com/DataDrake/cuppa/cmd"
-	"os"
+	"github.com/DataDrake/cuppa/cli"
 )
 
 func main() {
-
-	// Set Description
-	cmd.SetShort("Comprehensive Upstream Provider Polling Assistant")
-
-	// Setup the Sub-Commands
-	cmd.RegisterCMD("help", cmd.Help{})
-	cmd.RegisterCMD("latest", cmd.Latest{})
-	cmd.RegisterCMD("releases", cmd.Releases{})
-	cmd.RegisterCMD("quick", cmd.Quick{})
-
-	// Run the program
-	cmd.Run()
-
-	// Terminate Gracefully
-	os.Exit(0)
+	cli.Root.Run()
 }

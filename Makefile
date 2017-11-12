@@ -7,7 +7,7 @@ GOBIN    = build/bin
 GOSRC    = build/src
 PROJROOT = $(GOSRC)/github.com/DataDrake
 PKGNAME  = cuppa
-SUBPKGS  = cmd \
+SUBPKGS  = cli \
            providers \
            results
 
