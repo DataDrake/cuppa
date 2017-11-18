@@ -1,5 +1,5 @@
 //
-// Copyright 2017 Bryan T. Meyers <bmeyers@datadrake.com>
+// Copyright 2016-2017 Bryan T. Meyers <bmeyers@datadrake.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,9 +21,7 @@ import (
 	"time"
 )
 
-/*
-Result contains the information for a single query result
-*/
+// Result contains the information for a single query result
 type Result struct {
 	Name      string
 	Version   string
@@ -31,16 +29,12 @@ type Result struct {
 	Published time.Time
 }
 
-/*
-NewResult creates a result with the specified values
-*/
+// NewResult creates a result with the specified values
 func NewResult(name, version string, location string, published time.Time) *Result {
 	return &Result{name, version, location, published}
 }
 
-/*
-Print pretty-prints a single Result
-*/
+// Print pretty-prints a single Result
 func (r *Result) Print() {
 	fmt.Printf("%-10s: %s\n", "Name", r.Name)
 	fmt.Printf("%-10s: %s\n", "Version", r.Version)
@@ -53,9 +47,7 @@ func (r *Result) Print() {
 	fmt.Println()
 }
 
-/*
-PrintSimple only prints the version and the location of the latest release
-*/
+// PrintSimple only prints the version and the location of the latest release
 func (r *Result) PrintSimple() {
 	fmt.Printf("%s %s\n", r.Version, r.Location)
 }

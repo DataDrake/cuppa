@@ -1,5 +1,5 @@
 //
-// Copyright 2017 Bryan T. Meyers <bmeyers@datadrake.com>
+// Copyright 2016-2017 Bryan T. Meyers <bmeyers@datadrake.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ type githubRelease struct {
 	Tag        string `json:"tag_name"`
 }
 
+// Convert turns a Github release into a Cuppa release
 func (cr *githubRelease) Convert(name string) *results.Result {
 	if cr.PreRelease {
 		return nil
@@ -54,6 +55,7 @@ func (cr *githubRelease) Convert(name string) *results.Result {
 
 type githubResultSet []githubRelease
 
+// Convert turns a Github result set into a Cuppa result set
 func (crs *githubResultSet) Convert(name string) *results.ResultSet {
 	rs := results.NewResultSet(name)
 	for _, rel := range *crs {
@@ -69,6 +71,7 @@ type githubTag struct {
 	Ref string `json:"ref"`
 }
 
+// Convert a Github tagset to a Cuppa result set
 func (ts *githubTags) Convert(name string) *results.ResultSet {
 	rs := results.NewResultSet(name)
 	for _, t := range *ts {
@@ -82,6 +85,7 @@ func (ts *githubTags) Convert(name string) *results.ResultSet {
 
 type githubTags []githubTag
 
+// Convert turns a Github tag into a Cuppa result
 func (t *githubTag) Convert(name string) *results.Result {
 	r := &results.Result{}
 	pieces := strings.Split(name, "/")
@@ -92,22 +96,18 @@ func (t *githubTag) Convert(name string) *results.Result {
 	return r
 }
 
-/*
-GitHubProvider is the upstream provider interface for github
-*/
+// GitHubProvider is the upstream provider interface for github
 type GitHubProvider struct{}
 
-/*
-Latest finds the newest release for a github package
-*/
+// Latest finds the newest release for a github package
 func (c GitHubProvider) Latest(name string) (r *results.Result, s results.Status) {
-	//Query the API
+	// Query the API
 	resp, err := http.Get(fmt.Sprintf(githubAPILatest, name))
 	if err != nil {
 		panic(err.Error())
 	}
 	defer resp.Body.Close()
-	//Translate Status Code
+	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
 		s = results.OK
@@ -123,7 +123,7 @@ func (c GitHubProvider) Latest(name string) (r *results.Result, s results.Status
 		s = results.Unavailable
 	}
 
-	//Fail if not OK
+	// Fail if not OK
 	if s != results.OK {
 		return
 	}
@@ -138,9 +138,7 @@ func (c GitHubProvider) Latest(name string) (r *results.Result, s results.Status
 	return
 }
 
-/*
-Match checks to see if this provider can handle this kind of query
-*/
+// Match checks to see if this provider can handle this kind of query
 func (c GitHubProvider) Match(query string) string {
 	sm := githubRegex.FindStringSubmatch(query)
 	if len(sm) != 2 {
@@ -149,21 +147,19 @@ func (c GitHubProvider) Match(query string) string {
 	return sm[1]
 }
 
-/*
-Name gives the name of this provider
-*/
+// Name gives the name of this provider
 func (c GitHubProvider) Name() string {
 	return "GitHub"
 }
 
 func getTags(name string) (rs *results.ResultSet, s results.Status) {
-	//Query the API
+	// Query the API
 	resp, err := http.Get(fmt.Sprintf(githubAPITags, name))
 	if err != nil {
 		panic(err.Error())
 	}
 	defer resp.Body.Close()
-	//Translate Status Code
+	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
 		s = results.OK
@@ -173,7 +169,7 @@ func getTags(name string) (rs *results.ResultSet, s results.Status) {
 		s = results.Unavailable
 	}
 
-	//Fail if not OK
+	// Fail if not OK
 	if s != results.OK {
 		return
 	}
@@ -192,17 +188,15 @@ func getTags(name string) (rs *results.ResultSet, s results.Status) {
 	return
 }
 
-/*
-Releases finds all matching releases for a github package
-*/
+// Releases finds all matching releases for a github package
 func (c GitHubProvider) Releases(name string) (rs *results.ResultSet, s results.Status) {
-	//Query the API
+	// Query the API
 	resp, err := http.Get(fmt.Sprintf(githubAPIReleases, name))
 	if err != nil {
 		panic(err.Error())
 	}
 	defer resp.Body.Close()
-	//Translate Status Code
+	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
 		s = results.OK
@@ -213,7 +207,7 @@ func (c GitHubProvider) Releases(name string) (rs *results.ResultSet, s results.
 	}
 	println(s)
 
-	//Fail if not OK
+	// Fail if not OK
 	if s != results.OK {
 		return
 	}

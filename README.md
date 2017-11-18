@@ -29,6 +29,7 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 * BitBucket
 * FTP
 * Git
+* GNOME
 
 ### Stetch Goal Providers
 * RSS
@@ -44,7 +45,7 @@ Both of these will require some level of scraping to get useful info.
  
 ## License
  
-Copyright 2017 Bryan T. Meyers <bmeyers@datadrake.com>
+Copyright 2016-2017 Bryan T. Meyers <bmeyers@datadrake.com>
  
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

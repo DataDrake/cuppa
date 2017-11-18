@@ -1,5 +1,5 @@
 //
-// Copyright 2017 Bryan T. Meyers <bmeyers@datadrake.com>
+// Copyright 2016-2017 Bryan T. Meyers <bmeyers@datadrake.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -66,6 +66,7 @@ type launchpadRelease struct {
 	uploaded string
 }
 
+// Convert turns a Launchpad release into a Cuppa result
 func (lr *launchpadRelease) Convert() *results.Result {
 	r := &results.Result{}
 	r.Name = lr.name
@@ -79,6 +80,7 @@ type launchpadResultSet struct {
 	Releases []launchpadRelease
 }
 
+// Convert turns a Launchpad result set to a Cuppa result set
 func (lrs *launchpadResultSet) Convert(name string) *results.ResultSet {
 	rs := results.NewResultSet(name)
 	for _, rel := range lrs.Releases {
@@ -90,17 +92,13 @@ func (lrs *launchpadResultSet) Convert(name string) *results.ResultSet {
 	return rs
 }
 
-/*
-LaunchpadProvider is the upstream provider interface for launchpad
-*/
+// LaunchpadProvider is the upstream provider interface for launchpad
 type LaunchpadProvider struct{}
 
-/*
-Latest finds the newest release for a launchpad package
-*/
+// Latest finds the newest release for a launchpad package
 func (c LaunchpadProvider) Latest(name string) (r *results.Result, s results.Status) {
 	rs, s := c.Releases(name)
-	//Fail if not OK
+	// Fail if not OK
 	if s != results.OK {
 		return
 	}
@@ -108,9 +106,7 @@ func (c LaunchpadProvider) Latest(name string) (r *results.Result, s results.Sta
 	return
 }
 
-/*
-Match checks to see if this provider can handle this kind of query
-*/
+// Match checks to see if this provider can handle this kind of query
 func (c LaunchpadProvider) Match(query string) string {
 	sm := launchpadRegex.FindStringSubmatch(query)
 	if len(sm) == 0 {
@@ -119,19 +115,15 @@ func (c LaunchpadProvider) Match(query string) string {
 	return sm[1]
 }
 
-/*
-Name gives the name of this provider
-*/
+// Name gives the name of this provider
 func (c LaunchpadProvider) Name() string {
 	return "Launchpad"
 }
 
-/*
-Releases finds all matching releases for a launchpad package
-*/
+// Releases finds all matching releases for a launchpad package
 func (c LaunchpadProvider) Releases(name string) (rs *results.ResultSet, s results.Status) {
 
-	//Query the API
+	// Query the API
 	r, err := http.NewRequest("GET", fmt.Sprintf(launchpadAPISeries, name), nil)
 	if err != nil {
 		panic(err.Error())
@@ -145,7 +137,7 @@ func (c LaunchpadProvider) Releases(name string) (rs *results.ResultSet, s resul
 		panic(err.Error())
 	}
 	defer resp.Body.Close()
-	//Translate Status Code
+	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
 		s = results.OK
@@ -155,7 +147,7 @@ func (c LaunchpadProvider) Releases(name string) (rs *results.ResultSet, s resul
 		s = results.Unavailable
 	}
 
-	//Fail if not OK
+	// Fail if not OK
 	if s != results.OK {
 		return
 	}

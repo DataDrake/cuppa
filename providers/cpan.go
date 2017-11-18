@@ -1,5 +1,5 @@
 //
-// Copyright 2017 Bryan T. Meyers <bmeyers@datadrake.com>
+// Copyright 2016-2017 Bryan T. Meyers <bmeyers@datadrake.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -67,14 +67,10 @@ func (crs *cpanResultSet) Convert(name string) *results.ResultSet {
 	return rs
 }
 
-/*
-CPANProvider is the upstream provider interface for CPAN
-*/
+// CPANProvider is the upstream provider interface for CPAN
 type CPANProvider struct{}
 
-/*
-Latest finds the newest release for a CPAN package
-*/
+// Latest finds the newest release for a CPAN package
 func (c CPANProvider) Latest(name string) (r *results.Result, s results.Status) {
 	rs, s := c.Releases(name)
 	//Fail if not OK
@@ -85,9 +81,7 @@ func (c CPANProvider) Latest(name string) (r *results.Result, s results.Status) 
 	return
 }
 
-/*
-Match checks to see if this provider can handle this kind of query
-*/
+// Match checks to see if this provider can handle this kind of query
 func (c CPANProvider) Match(query string) string {
 	sm := cpanRegex.FindStringSubmatch(query)
 	if len(sm) == 0 {
@@ -100,24 +94,20 @@ func (c CPANProvider) Match(query string) string {
 	return strings.Join(pieces, "-")
 }
 
-/*
-Name gives the name of this provider
-*/
+// Name gives the name of this provider
 func (c CPANProvider) Name() string {
 	return "CPAN"
 }
 
-/*
-Releases finds all matching releases for a CPAN package
-*/
+// Releases finds all matching releases for a CPAN package
 func (c CPANProvider) Releases(name string) (rs *results.ResultSet, s results.Status) {
-	//Query the API
+	// Query the API
 	resp, err := http.Get(fmt.Sprintf(cpanAPIDist, name))
 	if err != nil {
 		panic(err.Error())
 	}
 	defer resp.Body.Close()
-	//Translate Status Code
+	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
 		s = results.OK
@@ -127,7 +117,7 @@ func (c CPANProvider) Releases(name string) (rs *results.ResultSet, s results.St
 		s = results.Unavailable
 	}
 
-	//Fail if not OK
+	// Fail if not OK
 	if s != results.OK {
 		return
 	}

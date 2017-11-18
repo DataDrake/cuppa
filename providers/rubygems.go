@@ -1,5 +1,5 @@
 //
-// Copyright 2017 Bryan T. Meyers <bmeyers@datadrake.com>
+// Copyright 2016-2017 Bryan T. Meyers <bmeyers@datadrake.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ type rubygemsLatest struct {
 	Version string `json:"version"`
 }
 
+// Convert turns a Rubygems latest release into a Cuppa result
 func (cr *rubygemsLatest) Convert(name string) *results.Result {
 	r := &results.Result{}
 	r.Name = name
@@ -48,6 +49,7 @@ type rubygemsVersion struct {
 	Number     string `json:"number"`
 }
 
+// Convert turns a Rubygems version to a Cuppa result
 func (cr *rubygemsVersion) Convert(name string) *results.Result {
 	if cr.PreRelease {
 		return nil
@@ -62,6 +64,7 @@ func (cr *rubygemsVersion) Convert(name string) *results.Result {
 
 type rubygemsResultSet []rubygemsVersion
 
+// Convert turns a Rubygems result set into a Cuppa result set
 func (crs *rubygemsResultSet) Convert(name string) *results.ResultSet {
 	rs := results.NewResultSet(name)
 	for _, rel := range *crs {
@@ -73,14 +76,10 @@ func (crs *rubygemsResultSet) Convert(name string) *results.ResultSet {
 	return rs
 }
 
-/*
-RubygemsProvider is the upstream provider interface for rubygems
-*/
+// RubygemsProvider is the upstream provider interface for rubygems
 type RubygemsProvider struct{}
 
-/*
-Latest finds the newest release for a rubygems package
-*/
+// Latest finds the newest release for a rubygems package
 func (c RubygemsProvider) Latest(name string) (r *results.Result, s results.Status) {
 	//Query the API
 	resp, err := http.Get(fmt.Sprintf(rubygemsAPILatest, name))
@@ -88,7 +87,7 @@ func (c RubygemsProvider) Latest(name string) (r *results.Result, s results.Stat
 		panic(err.Error())
 	}
 	defer resp.Body.Close()
-	//Translate Status Code
+	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
 		s = results.OK
@@ -98,7 +97,7 @@ func (c RubygemsProvider) Latest(name string) (r *results.Result, s results.Stat
 		s = results.Unavailable
 	}
 
-	//Fail if not OK
+	// Fail if not OK
 	if s != results.OK {
 		return
 	}
@@ -113,9 +112,7 @@ func (c RubygemsProvider) Latest(name string) (r *results.Result, s results.Stat
 	return
 }
 
-/*
-Match checks to see if this provider can handle this kind of query
-*/
+// Match checks to see if this provider can handle this kind of query
 func (c RubygemsProvider) Match(query string) string {
 	sm := rubygemsRegex.FindStringSubmatch(query)
 	if len(sm) != 2 {
@@ -124,24 +121,20 @@ func (c RubygemsProvider) Match(query string) string {
 	return sm[1]
 }
 
-/*
-Name gives the name of this provider
-*/
+// Name gives the name of this provider
 func (c RubygemsProvider) Name() string {
 	return "Rubygems"
 }
 
-/*
-Releases finds all matching releases for a rubygems package
-*/
+// Releases finds all matching releases for a rubygems package
 func (c RubygemsProvider) Releases(name string) (rs *results.ResultSet, s results.Status) {
-	//Query the API
+	// Query the API
 	resp, err := http.Get(fmt.Sprintf(rubygemsAPIVersions, name))
 	if err != nil {
 		panic(err.Error())
 	}
 	defer resp.Body.Close()
-	//Translate Status Code
+	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
 		s = results.OK
@@ -151,7 +144,7 @@ func (c RubygemsProvider) Releases(name string) (rs *results.ResultSet, s result
 		s = results.Unavailable
 	}
 
-	//Fail if not OK
+	// Fail if not OK
 	if s != results.OK {
 		return
 	}

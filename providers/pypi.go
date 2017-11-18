@@ -1,5 +1,5 @@
 //
-// Copyright 2017 Bryan T. Meyers <bmeyers@datadrake.com>
+// Copyright 2016-2017 Bryan T. Meyers <bmeyers@datadrake.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ type pypiLatest struct {
 	URLs []pypiURL `json:"urls"`
 }
 
+// Convert turns a PyPi latest into a Cuppa Result
 func (cr *pypiLatest) Convert(name string) *results.Result {
 	r := &results.Result{}
 	r.Name = name
@@ -79,22 +80,18 @@ func (crs *pypiResultSet) Convert(name string) *results.ResultSet {
 	return rs
 }
 
-/*
-PyPiProvider is the upstream provider interface for pypi
-*/
+// PyPiProvider is the upstream provider interface for pypi
 type PyPiProvider struct{}
 
-/*
-Latest finds the newest release for a pypi package
-*/
+// Latest finds the newest release for a pypi package
 func (c PyPiProvider) Latest(name string) (r *results.Result, s results.Status) {
-	//Query the API
+	// Query the API
 	resp, err := http.Get(fmt.Sprintf(pypiAPI, name))
 	if err != nil {
 		panic(err.Error())
 	}
 	defer resp.Body.Close()
-	//Translate Status Code
+	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
 		s = results.OK
@@ -104,7 +101,7 @@ func (c PyPiProvider) Latest(name string) (r *results.Result, s results.Status) 
 		s = results.Unavailable
 	}
 
-	//Fail if not OK
+	// Fail if not OK
 	if s != results.OK {
 		return
 	}
@@ -119,9 +116,7 @@ func (c PyPiProvider) Latest(name string) (r *results.Result, s results.Status) 
 	return
 }
 
-/*
-Match checks to see if this provider can handle this kind of query
-*/
+// Match checks to see if this provider can handle this kind of query
 func (c PyPiProvider) Match(query string) string {
 	sm := pypiRegex.FindStringSubmatch(query)
 	if len(sm) != 2 {
@@ -130,24 +125,20 @@ func (c PyPiProvider) Match(query string) string {
 	return sm[1]
 }
 
-/*
-Name gives the name of this provider
-*/
+// Name gives the name of this provider
 func (c PyPiProvider) Name() string {
 	return "PyPi"
 }
 
-/*
-Releases finds all matching releases for a pypi package
-*/
+// Releases finds all matching releases for a pypi package
 func (c PyPiProvider) Releases(name string) (rs *results.ResultSet, s results.Status) {
-	//Query the API
+	// Query the API
 	resp, err := http.Get(fmt.Sprintf(pypiAPI, name))
 	if err != nil {
 		panic(err.Error())
 	}
 	defer resp.Body.Close()
-	//Translate Status Code
+	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
 		s = results.OK
@@ -157,7 +148,7 @@ func (c PyPiProvider) Releases(name string) (rs *results.ResultSet, s results.St
 		s = results.Unavailable
 	}
 
-	//Fail if not OK
+	// Fail if not OK
 	if s != results.OK {
 		return
 	}

@@ -1,5 +1,5 @@
 //
-// Copyright 2017 Bryan T. Meyers <bmeyers@datadrake.com>
+// Copyright 2016-2017 Bryan T. Meyers <bmeyers@datadrake.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ type jetbrainsRelease struct {
 	Version      string                       `json:"version"`
 }
 
+// Convert turns a JetBrains release into a Cuppa result
 func (jb jetbrainsRelease) Convert() *results.Result {
 	r := &results.Result{}
 	r.Version = jb.Version
@@ -77,6 +78,7 @@ func (jb jetbrainsRelease) Convert() *results.Result {
 
 type jetbrainsResultSet map[string][]jetbrainsRelease
 
+// Convert turns a JetBrains result set into a Cuppa result set
 func (jbs jetbrainsResultSet) Convert(name string) *results.ResultSet {
 	rs := results.NewResultSet(name)
 	code := releaseCode[name]
@@ -90,23 +92,19 @@ func (jbs jetbrainsResultSet) Convert(name string) *results.ResultSet {
 	return rs
 }
 
-/*
-JetBrainsProvider is the upstream provider interface for JetBrains
-*/
+// JetBrainsProvider is the upstream provider interface for JetBrains
 type JetBrainsProvider struct{}
 
-/*
-Latest finds the newest release for a JetBrains package
-*/
+// Latest finds the newest release for a JetBrains package
 func (c JetBrainsProvider) Latest(name string) (r *results.Result, s results.Status) {
-	//Query the API
+	// Query the API
 	code := releaseCode[name]
 	resp, err := http.Get(fmt.Sprintf(jetbrainsAPI, code))
 	if err != nil {
 		panic(err.Error())
 	}
 	defer resp.Body.Close()
-	//Translate Status Code
+	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
 		s = results.OK
@@ -116,7 +114,7 @@ func (c JetBrainsProvider) Latest(name string) (r *results.Result, s results.Sta
 		s = results.Unavailable
 	}
 
-	//Fail if not OK
+	// Fail if not OK
 	if s != results.OK {
 		return
 	}
@@ -135,9 +133,7 @@ func (c JetBrainsProvider) Latest(name string) (r *results.Result, s results.Sta
 	return
 }
 
-/*
-Match checks to see if this provider can handle this kind of query
-*/
+// Match checks to see if this provider can handle this kind of query
 func (c JetBrainsProvider) Match(query string) string {
 	sm := jetbrainsRegex.FindStringSubmatch(query)
 	if len(sm) != 2 {
@@ -146,25 +142,21 @@ func (c JetBrainsProvider) Match(query string) string {
 	return strings.ToLower(sm[1])
 }
 
-/*
-Name gives the name of this provider
-*/
+// Name gives the name of this provider
 func (c JetBrainsProvider) Name() string {
 	return "JetBrains"
 }
 
-/*
-Releases finds all matching releases for a JetBrains package
-*/
+// Releases finds all matching releases for a JetBrains package
 func (c JetBrainsProvider) Releases(name string) (rs *results.ResultSet, s results.Status) {
-	//Query the API
+	// Query the API
 	code := releaseCode[name]
 	resp, err := http.Get(fmt.Sprintf(jetbrainsAPI, code))
 	if err != nil {
 		panic(err.Error())
 	}
 	defer resp.Body.Close()
-	//Translate Status Code
+	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
 		s = results.OK
@@ -174,7 +166,7 @@ func (c JetBrainsProvider) Releases(name string) (rs *results.ResultSet, s resul
 		s = results.Unavailable
 	}
 
-	//Fail if not OK
+	// Fail if not OK
 	if s != results.OK {
 		return
 	}

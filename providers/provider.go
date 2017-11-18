@@ -1,5 +1,5 @@
 //
-// Copyright 2017 Bryan T. Meyers <bmeyers@datadrake.com>
+// Copyright 2016-2017 Bryan T. Meyers <bmeyers@datadrake.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,9 +18,7 @@ package providers
 
 import "github.com/DataDrake/cuppa/results"
 
-/*
-Provider provides a common interface for each of the backend providers
-*/
+// Provider provides a common interface for each of the backend providers
 type Provider interface {
 	Latest(name string) (*results.Result, results.Status)
 	Match(query string) string

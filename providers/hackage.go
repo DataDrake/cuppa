@@ -1,5 +1,5 @@
 //
-// Copyright 2017 Bryan T. Meyers <bmeyers@datadrake.com>
+// Copyright 2016-2017 Bryan T. Meyers <bmeyers@datadrake.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ type hackageRelease struct {
 	version  string
 }
 
+// Convert turns a Hackage release into a Cuppa result
 func (hr *hackageRelease) Convert() *results.Result {
 	r := &results.Result{}
 	r.Name = hr.name
@@ -54,6 +55,7 @@ type hackageResultSet struct {
 	Releases []hackageRelease
 }
 
+// Convert turns a Hackage result set into a Cuppa result set
 func (hrs *hackageResultSet) Convert(name string) *results.ResultSet {
 	rs := results.NewResultSet(name)
 	for _, rel := range hrs.Releases {
@@ -65,17 +67,13 @@ func (hrs *hackageResultSet) Convert(name string) *results.ResultSet {
 	return rs
 }
 
-/*
-HackageProvider is the upstream provider interface for hackage
-*/
+// HackageProvider is the upstream provider interface for hackage
 type HackageProvider struct{}
 
-/*
-Latest finds the newest release for a hackage package
-*/
+// Latest finds the newest release for a hackage package
 func (c HackageProvider) Latest(name string) (r *results.Result, s results.Status) {
 	rs, s := c.Releases(name)
-	//Fail if not OK
+	// Fail if not OK
 	if s != results.OK {
 		return
 	}
@@ -83,9 +81,7 @@ func (c HackageProvider) Latest(name string) (r *results.Result, s results.Statu
 	return
 }
 
-/*
-Match checks to see if this provider can handle this kind of query
-*/
+// Match checks to see if this provider can handle this kind of query
 func (c HackageProvider) Match(query string) string {
 	sm := hackageRegex.FindStringSubmatch(query)
 	if len(sm) == 0 {
@@ -94,19 +90,15 @@ func (c HackageProvider) Match(query string) string {
 	return sm[1]
 }
 
-/*
-Name gives the name of this provider
-*/
+// Name gives the name of this provider
 func (c HackageProvider) Name() string {
 	return "Hackage"
 }
 
-/*
-Releases finds all matching releases for a hackage package
-*/
+// Releases finds all matching releases for a hackage package
 func (c HackageProvider) Releases(name string) (rs *results.ResultSet, s results.Status) {
 
-	//Query the API
+	// Query the API
 	r, err := http.NewRequest("GET", fmt.Sprintf(hackageAPIVersions, name), nil)
 	if err != nil {
 		panic(err.Error())
@@ -120,7 +112,7 @@ func (c HackageProvider) Releases(name string) (rs *results.ResultSet, s results
 		panic(err.Error())
 	}
 	defer resp.Body.Close()
-	//Translate Status Code
+	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
 		s = results.OK
@@ -130,7 +122,7 @@ func (c HackageProvider) Releases(name string) (rs *results.ResultSet, s results
 		s = results.Unavailable
 	}
 
-	//Fail if not OK
+	// Fail if not OK
 	if s != results.OK {
 		return
 	}

@@ -16,9 +16,7 @@
 
 package results
 
-/*
-Status indicates the state of a query upon completion
-*/
+// Status indicates the state of a query upon completion
 type Status uint8
 
 const (
