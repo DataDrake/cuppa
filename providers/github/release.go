@@ -14,31 +14,31 @@
 // limitations under the License.
 //
 
-package providers
+package github
 
 import (
-	"github.com/DataDrake/cuppa/providers/cpan"
-	"github.com/DataDrake/cuppa/providers/github"
+	"fmt"
 	"github.com/DataDrake/cuppa/results"
+	"time"
 )
 
-// Provider provides a common interface for each of the backend providers
-type Provider interface {
-	Latest(name string) (*results.Result, results.Status)
-	Match(query string) string
-	Name() string
-	Releases(name string) (*results.ResultSet, results.Status)
+// Release is a JSON representation fo a Github release
+type Release struct {
+	CreatedAt  string `json:"created_at"`
+	Name       string `json:"name"`
+	PreRelease bool   `json:"prerelease"`
+	Tag        string `json:"tag_name"`
 }
 
-// All returns a list of all available providers
-func All() []Provider {
-	return []Provider{
-		cpan.Provider{},
-		github.Provider{},
-		HackageProvider{},
-		JetBrainsProvider{},
-		LaunchpadProvider{},
-		PyPiProvider{},
-		RubygemsProvider{},
+// Convert turns a Github release into a Cuppa release
+func (cr *Release) Convert(name string) *results.Result {
+	if cr.PreRelease {
+		return nil
 	}
+	r := &results.Result{}
+	r.Name = cr.Name
+	r.Version = VersionRegex.FindString(cr.Tag)
+	r.Published, _ = time.Parse(time.RFC3339, cr.CreatedAt)
+	r.Location = fmt.Sprintf(SourceFormat, name, cr.Tag)
+	return r
 }
