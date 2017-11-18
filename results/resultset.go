@@ -16,7 +16,11 @@
 
 package results
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+	"strings"
+)
 
 // ResultSet is a collection of the Results of a Provider query
 type ResultSet struct {
@@ -53,6 +57,7 @@ func (rs *ResultSet) Last() *Result {
 func (rs *ResultSet) PrintAll() {
 	fmt.Printf("%-25s: '%s'\n", "Results of Query", rs.query)
 	fmt.Printf("%-25s: %d\n\n", "Total Number of Results", len(rs.results))
+	sort.Sort(rs)
 	for _, r := range rs.results {
 		r.Print()
 	}
@@ -62,4 +67,20 @@ func (rs *ResultSet) PrintAll() {
 func (rs *ResultSet) PrintFirst() {
 	fmt.Printf("First Result of Query: '%s'\n", rs.query)
 	rs.results[0].Print()
+}
+
+// Len is the number of elements in the ResultSet (sort.Interface)
+func (rs *ResultSet) Len() int {
+	return len(rs.results)
+}
+
+// Less reports whether the element with
+// index i should sort before the element with index j. (sort.Interface)
+func (rs *ResultSet) Less(i, j int) bool {
+	return strings.Compare(rs.results[i].Version, rs.results[j].Version) == -1
+}
+
+// Swap swaps the elements with indexes i and j.
+func (rs *ResultSet) Swap(i, j int) {
+	rs.results[i], rs.results[j] = rs.results[j], rs.results[i]
 }

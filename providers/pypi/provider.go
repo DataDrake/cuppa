@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package providers
+package pypi
 
 import (
 	"encoding/json"
@@ -22,71 +22,25 @@ import (
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
 	"regexp"
-	"time"
 )
 
-var pypiAPI = "https://pypi.python.org/pypi/%s/json"
-var pypiRegex = regexp.MustCompile("https?://pypi.python.org/packages/\\w+/\\w+/\\w+/(.+)-.+.tar.gz")
+const (
+	// SourceAPI is the format string for the PyPi API
+	SourceAPI = "https://pypi.python.org/pypi/%s/json"
+	// DateFormat is the Time format used by PyPi
+	DateFormat = "2006-01-02T15:04:05"
+)
 
-const pythonTime = "2006-01-02T15:04:05"
+// TarballRegex matches PyPi source tarballs
+var TarballRegex = regexp.MustCompile("https?://pypi.python.org/packages/\\w+/\\w+/\\w+/(.+)-.+.tar.gz")
 
-type pypiInfo struct {
-	Version string `json:"version"`
-}
-
-type pypiURL struct {
-	UploadTime string `json:"upload_time"`
-	URL        string `json:"url"`
-}
-
-type pypiLatest struct {
-	Info pypiInfo  `json:"info"`
-	URLs []pypiURL `json:"urls"`
-}
-
-// Convert turns a PyPi latest into a Cuppa Result
-func (cr *pypiLatest) Convert(name string) *results.Result {
-	r := &results.Result{}
-	r.Name = name
-	r.Version = cr.Info.Version
-	u := cr.URLs[len(cr.URLs)-1]
-	r.Published, _ = time.Parse(pythonTime, u.UploadTime)
-	r.Location = u.URL
-	return r
-}
-
-func converURLs(cr []pypiURL, name, version string) *results.Result {
-	r := &results.Result{}
-	r.Name = name
-	r.Version = version
-	u := cr[len(cr)-1]
-	r.Published, _ = time.Parse(pythonTime, u.UploadTime)
-	r.Location = u.URL
-	return r
-}
-
-type pypiResultSet struct {
-	Releases map[string][]pypiURL
-}
-
-func (crs *pypiResultSet) Convert(name string) *results.ResultSet {
-	rs := results.NewResultSet(name)
-	for ver, rel := range crs.Releases {
-		r := converURLs(rel, name, ver)
-		if r != nil {
-			rs.AddResult(r)
-		}
-	}
-	return rs
-}
-
-// PyPiProvider is the upstream provider interface for pypi
-type PyPiProvider struct{}
+// Provider is the upstream provider interface for pypi
+type Provider struct{}
 
 // Latest finds the newest release for a pypi package
-func (c PyPiProvider) Latest(name string) (r *results.Result, s results.Status) {
+func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 	// Query the API
-	resp, err := http.Get(fmt.Sprintf(pypiAPI, name))
+	resp, err := http.Get(fmt.Sprintf(SourceAPI, name))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -107,7 +61,7 @@ func (c PyPiProvider) Latest(name string) (r *results.Result, s results.Status) 
 	}
 
 	dec := json.NewDecoder(resp.Body)
-	cr := &pypiLatest{}
+	cr := &LatestSource{}
 	err = dec.Decode(cr)
 	if err != nil {
 		panic(err.Error())
@@ -117,8 +71,8 @@ func (c PyPiProvider) Latest(name string) (r *results.Result, s results.Status) 
 }
 
 // Match checks to see if this provider can handle this kind of query
-func (c PyPiProvider) Match(query string) string {
-	sm := pypiRegex.FindStringSubmatch(query)
+func (c Provider) Match(query string) string {
+	sm := TarballRegex.FindStringSubmatch(query)
 	if len(sm) != 2 {
 		return ""
 	}
@@ -126,14 +80,14 @@ func (c PyPiProvider) Match(query string) string {
 }
 
 // Name gives the name of this provider
-func (c PyPiProvider) Name() string {
+func (c Provider) Name() string {
 	return "PyPi"
 }
 
 // Releases finds all matching releases for a pypi package
-func (c PyPiProvider) Releases(name string) (rs *results.ResultSet, s results.Status) {
+func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
 	// Query the API
-	resp, err := http.Get(fmt.Sprintf(pypiAPI, name))
+	resp, err := http.Get(fmt.Sprintf(SourceAPI, name))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -154,7 +108,7 @@ func (c PyPiProvider) Releases(name string) (rs *results.ResultSet, s results.St
 	}
 
 	dec := json.NewDecoder(resp.Body)
-	crs := &pypiResultSet{}
+	crs := &Releases{}
 	err = dec.Decode(crs)
 	if err != nil {
 		panic(err.Error())
