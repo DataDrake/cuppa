@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package providers
+package hackage
 
 import (
 	"encoding/json"
@@ -23,55 +23,25 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
-	"time"
 )
 
-var hackageAPITarball = "https://hackage.haskell.org/package/%s-%s/%s-%s.tar.gz"
-var hackageAPIUploadTime = "https://hackage.haskell.org/package/%s-%s/upload-time"
-var hackageAPIVersions = "https://hackage.haskell.org/package/%s/preferred"
-var hackageRegex = regexp.MustCompile("https?://hackage.haskell.org/package/(.*)-(.*)/.*.tar.gz")
+const (
+	// TarballAPI is the format string for the Hackage Tarball API
+	TarballAPI = "https://hackage.haskell.org/package/%s-%s/%s-%s.tar.gz"
+	// UploadTimeAPI is the format string for the Hackage Upload Time API
+	UploadTimeAPI = "https://hackage.haskell.org/package/%s-%s/upload-time"
+	// VersionsAPI is the format string for the Hackage Versions API
+	VersionsAPI = "https://hackage.haskell.org/package/%s/preferred"
+)
 
-type hackageVersions struct {
-	Normal []string `json:"normal-version"`
-}
+// TarballRegex matches HAckage tarballs
+var TarballRegex = regexp.MustCompile("https?://hackage.haskell.org/package/(.*)-(.*)/.*.tar.gz")
 
-type hackageRelease struct {
-	name     string
-	released string
-	version  string
-}
-
-// Convert turns a Hackage release into a Cuppa result
-func (hr *hackageRelease) Convert() *results.Result {
-	r := &results.Result{}
-	r.Name = hr.name
-	r.Version = hr.version
-	r.Published, _ = time.Parse(time.UnixDate, hr.released)
-	r.Location = fmt.Sprintf(hackageAPITarball, hr.name, hr.version, hr.name, hr.version)
-	return r
-}
-
-type hackageResultSet struct {
-	Releases []hackageRelease
-}
-
-// Convert turns a Hackage result set into a Cuppa result set
-func (hrs *hackageResultSet) Convert(name string) *results.ResultSet {
-	rs := results.NewResultSet(name)
-	for _, rel := range hrs.Releases {
-		r := rel.Convert()
-		if r != nil {
-			rs.AddResult(r)
-		}
-	}
-	return rs
-}
-
-// HackageProvider is the upstream provider interface for hackage
-type HackageProvider struct{}
+// Provider is the upstream provider interface for hackage
+type Provider struct{}
 
 // Latest finds the newest release for a hackage package
-func (c HackageProvider) Latest(name string) (r *results.Result, s results.Status) {
+func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 	rs, s := c.Releases(name)
 	// Fail if not OK
 	if s != results.OK {
@@ -82,8 +52,8 @@ func (c HackageProvider) Latest(name string) (r *results.Result, s results.Statu
 }
 
 // Match checks to see if this provider can handle this kind of query
-func (c HackageProvider) Match(query string) string {
-	sm := hackageRegex.FindStringSubmatch(query)
+func (c Provider) Match(query string) string {
+	sm := TarballRegex.FindStringSubmatch(query)
 	if len(sm) == 0 {
 		return ""
 	}
@@ -91,15 +61,15 @@ func (c HackageProvider) Match(query string) string {
 }
 
 // Name gives the name of this provider
-func (c HackageProvider) Name() string {
+func (c Provider) Name() string {
 	return "Hackage"
 }
 
 // Releases finds all matching releases for a hackage package
-func (c HackageProvider) Releases(name string) (rs *results.ResultSet, s results.Status) {
+func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
 
 	// Query the API
-	r, err := http.NewRequest("GET", fmt.Sprintf(hackageAPIVersions, name), nil)
+	r, err := http.NewRequest("GET", fmt.Sprintf(VersionsAPI, name), nil)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -128,19 +98,19 @@ func (c HackageProvider) Releases(name string) (rs *results.ResultSet, s results
 	}
 
 	dec := json.NewDecoder(resp.Body)
-	versions := &hackageVersions{}
+	versions := &Versions{}
 	err = dec.Decode(versions)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	hrs := &hackageResultSet{}
+	hrs := &Releases{}
 	for _, v := range versions.Normal {
-		hr := hackageRelease{
+		hr := Release{
 			name:    name,
 			version: v,
 		}
-		r, err := http.Get(fmt.Sprintf(hackageAPIUploadTime, name, v))
+		r, err := http.Get(fmt.Sprintf(UploadTimeAPI, name, v))
 		if err != nil {
 			panic(err.Error())
 		}

@@ -14,32 +14,32 @@
 // limitations under the License.
 //
 
-package providers
+package hackage
 
 import (
-	"github.com/DataDrake/cuppa/providers/cpan"
-	"github.com/DataDrake/cuppa/providers/github"
-	"github.com/DataDrake/cuppa/providers/hackage"
+	"fmt"
 	"github.com/DataDrake/cuppa/results"
+	"time"
 )
 
-// Provider provides a common interface for each of the backend providers
-type Provider interface {
-	Latest(name string) (*results.Result, results.Status)
-	Match(query string) string
-	Name() string
-	Releases(name string) (*results.ResultSet, results.Status)
+// Versions is a JSON representation of Hackage release version numbers
+type Versions struct {
+	Normal []string `json:"normal-version"`
 }
 
-// All returns a list of all available providers
-func All() []Provider {
-	return []Provider{
-		cpan.Provider{},
-		github.Provider{},
-		hackage.Provider{},
-		JetBrainsProvider{},
-		LaunchpadProvider{},
-		PyPiProvider{},
-		RubygemsProvider{},
-	}
+// Release is a local representation of a Hackage release
+type Release struct {
+	name     string
+	released string
+	version  string
+}
+
+// Convert turns a Hackage release into a Cuppa result
+func (hr *Release) Convert() *results.Result {
+	r := &results.Result{}
+	r.Name = hr.name
+	r.Version = hr.version
+	r.Published, _ = time.Parse(time.UnixDate, hr.released)
+	r.Location = fmt.Sprintf(TarballAPI, hr.name, hr.version, hr.name, hr.version)
+	return r
 }

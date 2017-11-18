@@ -14,32 +14,25 @@
 // limitations under the License.
 //
 
-package providers
+package hackage
 
 import (
-	"github.com/DataDrake/cuppa/providers/cpan"
-	"github.com/DataDrake/cuppa/providers/github"
-	"github.com/DataDrake/cuppa/providers/hackage"
 	"github.com/DataDrake/cuppa/results"
 )
 
-// Provider provides a common interface for each of the backend providers
-type Provider interface {
-	Latest(name string) (*results.Result, results.Status)
-	Match(query string) string
-	Name() string
-	Releases(name string) (*results.ResultSet, results.Status)
+// Releases is a representation of one or more Hackage releases
+type Releases struct {
+	Releases []Release
 }
 
-// All returns a list of all available providers
-func All() []Provider {
-	return []Provider{
-		cpan.Provider{},
-		github.Provider{},
-		hackage.Provider{},
-		JetBrainsProvider{},
-		LaunchpadProvider{},
-		PyPiProvider{},
-		RubygemsProvider{},
+// Convert turns a Hackage result set into a Cuppa result set
+func (hrs *Releases) Convert(name string) *results.ResultSet {
+	rs := results.NewResultSet(name)
+	for _, rel := range hrs.Releases {
+		r := rel.Convert()
+		if r != nil {
+			rs.AddResult(r)
+		}
 	}
+	return rs
 }
