@@ -19,6 +19,7 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 ### Supported Providers
 * CPAN
 * Github
+* GNOME
 * Hackage
 * Jetbrains
 * Launchpad
@@ -29,7 +30,6 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 * BitBucket
 * FTP
 * Git
-* GNOME
 
 ### Stetch Goal Providers
 * RSS

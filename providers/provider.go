@@ -19,6 +19,7 @@ package providers
 import (
 	"github.com/DataDrake/cuppa/providers/cpan"
 	"github.com/DataDrake/cuppa/providers/github"
+	"github.com/DataDrake/cuppa/providers/gnome"
 	"github.com/DataDrake/cuppa/providers/hackage"
 	"github.com/DataDrake/cuppa/providers/jetbrains"
 	"github.com/DataDrake/cuppa/providers/launchpad"
@@ -40,6 +41,7 @@ func All() []Provider {
 	return []Provider{
 		cpan.Provider{},
 		github.Provider{},
+		gnome.Provider{},
 		hackage.Provider{},
 		jetbrains.Provider{},
 		launchpad.Provider{},
