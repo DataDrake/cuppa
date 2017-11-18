@@ -14,37 +14,23 @@
 // limitations under the License.
 //
 
-package pypi
+package rubygems
 
 import (
+	"fmt"
 	"github.com/DataDrake/cuppa/results"
-	"time"
 )
 
-// Info contains a PyPi Version number
-type Info struct {
+// LatestVersion is a JSON representation of the latest Version of a Gem
+type LatestVersion struct {
 	Version string `json:"version"`
 }
 
-// URL contains a JSON representation of a PyPi tarball URL
-type URL struct {
-	UploadTime string `json:"upload_time"`
-	URL        string `json:"url"`
-}
-
-// LatestSource contains a JSON representation of a PyPi Source
-type LatestSource struct {
-	Info Info  `json:"info"`
-	URLs []URL `json:"urls"`
-}
-
-// Convert turns a PyPi latest into a Cuppa Result
-func (cr *LatestSource) Convert(name string) *results.Result {
+// Convert turns a Rubygems latest release into a Cuppa result
+func (cr *LatestVersion) Convert(name string) *results.Result {
 	r := &results.Result{}
 	r.Name = name
-	r.Version = cr.Info.Version
-	u := cr.URLs[len(cr.URLs)-1]
-	r.Published, _ = time.Parse(DateFormat, u.UploadTime)
-	r.Location = u.URL
+	r.Version = cr.Version
+	r.Location = fmt.Sprintf(SourceFormat, name, cr.Version)
 	return r
 }
