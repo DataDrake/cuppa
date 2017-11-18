@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package providers
+package jetbrains
 
 import (
 	"encoding/json"
@@ -23,83 +23,45 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
-	"time"
 )
 
-var releaseCode = map[string]string{
+// ReleaseCodes provides a mapping between JetBrains products and their API codename
+var ReleaseCodes = map[string]string{
 	"appcode":              "AC",
 	"clion":                "CL",
 	"datagrip":             "DG",
+	"goglang":              "GO",
 	"ideaiu":               "IIU",
 	"ideaic":               "IIC",
 	"phpstorm":             "PS",
 	"pycharm-professional": "PCP",
 	"pycharm-ce":           "PCC",
 	"pycharm-community":    "PCC",
+	"pycharm-edu":          "PCE",
+	"rider":                "RD",
 	"rubymine":             "RM",
+	"upsource":             "US",
 	"webstorm":             "WS",
 }
 
-var jetbrainsAPI = "https://data.services.jetbrains.com/products/releases?code=%s"
-var jetbrainsAPILatest = "https://data.services.jetbrains.com/products/releases?code=%s&latest=true"
-var jetbrainsRegex = regexp.MustCompile("https?://download.jetbrains.com/.+?/(.+?)-\\d.*")
+const (
+	// ReleasesAPI is the format string for the JetBrains Releases API
+	ReleasesAPI = "https://data.services.jetbrains.com/products/releases?code=%s"
+	// LatestAPI is the format string for the JetBrains Releases API when asking for latest
+	LatestAPI = "https://data.services.jetbrains.com/products/releases?code=%s&latest=true"
+)
 
-type jetbrainsDownload struct {
-	ChecksumLink string `json:"checksumLink"`
-	Link         string `json:"link"`
-	Size         uint64 `json:"size"`
-}
+// SourceRegex matches JetBrains sources
+var SourceRegex = regexp.MustCompile("https?://download.jetbrains.com/.+?/(.+?)-\\d.*")
 
-type jetbrainsRelease struct {
-	Build        string                       `json:"build"`
-	Date         string                       `json:"date"`
-	Downloads    map[string]jetbrainsDownload `json:"downloads"`
-	Notes        string                       `json:"notesLink"`
-	Type         string                       `json:"type"`
-	MajorVersion string                       `json:"majorVersion"`
-	Version      string                       `json:"version"`
-}
-
-// Convert turns a JetBrains release into a Cuppa result
-func (jb jetbrainsRelease) Convert() *results.Result {
-	r := &results.Result{}
-	r.Version = jb.Version
-	r.Published, _ = time.Parse("2006-01-02", jb.Date)
-	if d, ok := jb.Downloads["linuxWithoutJDK"]; ok {
-		r.Location = d.Link
-		return r
-	}
-	if d, ok := jb.Downloads["linux"]; ok {
-		r.Location = d.Link
-		return r
-	}
-	return r
-}
-
-type jetbrainsResultSet map[string][]jetbrainsRelease
-
-// Convert turns a JetBrains result set into a Cuppa result set
-func (jbs jetbrainsResultSet) Convert(name string) *results.ResultSet {
-	rs := results.NewResultSet(name)
-	code := releaseCode[name]
-	for _, rel := range jbs[code] {
-		r := rel.Convert()
-		if r != nil {
-			r.Name = name
-			rs.AddResult(r)
-		}
-	}
-	return rs
-}
-
-// JetBrainsProvider is the upstream provider interface for JetBrains
-type JetBrainsProvider struct{}
+// Provider is the upstream provider interface for JetBrains
+type Provider struct{}
 
 // Latest finds the newest release for a JetBrains package
-func (c JetBrainsProvider) Latest(name string) (r *results.Result, s results.Status) {
+func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 	// Query the API
-	code := releaseCode[name]
-	resp, err := http.Get(fmt.Sprintf(jetbrainsAPI, code))
+	code := ReleaseCodes[name]
+	resp, err := http.Get(fmt.Sprintf(LatestAPI, code))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -120,7 +82,7 @@ func (c JetBrainsProvider) Latest(name string) (r *results.Result, s results.Sta
 	}
 
 	dec := json.NewDecoder(resp.Body)
-	jbs := make(jetbrainsResultSet)
+	jbs := make(Releases)
 	err = dec.Decode(&jbs)
 	if err != nil {
 		panic(err.Error())
@@ -134,8 +96,8 @@ func (c JetBrainsProvider) Latest(name string) (r *results.Result, s results.Sta
 }
 
 // Match checks to see if this provider can handle this kind of query
-func (c JetBrainsProvider) Match(query string) string {
-	sm := jetbrainsRegex.FindStringSubmatch(query)
+func (c Provider) Match(query string) string {
+	sm := SourceRegex.FindStringSubmatch(query)
 	if len(sm) != 2 {
 		return ""
 	}
@@ -143,15 +105,15 @@ func (c JetBrainsProvider) Match(query string) string {
 }
 
 // Name gives the name of this provider
-func (c JetBrainsProvider) Name() string {
+func (c Provider) Name() string {
 	return "JetBrains"
 }
 
 // Releases finds all matching releases for a JetBrains package
-func (c JetBrainsProvider) Releases(name string) (rs *results.ResultSet, s results.Status) {
+func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
 	// Query the API
-	code := releaseCode[name]
-	resp, err := http.Get(fmt.Sprintf(jetbrainsAPI, code))
+	code := ReleaseCodes[name]
+	resp, err := http.Get(fmt.Sprintf(ReleasesAPI, code))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -172,7 +134,7 @@ func (c JetBrainsProvider) Releases(name string) (rs *results.ResultSet, s resul
 	}
 
 	dec := json.NewDecoder(resp.Body)
-	jbs := make(jetbrainsResultSet)
+	jbs := make(Releases)
 	err = dec.Decode(&jbs)
 	if err != nil {
 		panic(err.Error())
