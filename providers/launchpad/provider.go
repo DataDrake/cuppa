@@ -114,6 +114,7 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 
 		// Only stable or supported
 		switch s.Status {
+		case "Active Development":
 		case "Current Stable Release":
 		case "Supported":
 		default:
@@ -129,7 +130,8 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 		if err != nil {
 			panic(err.Error())
 		}
-		for _, r := range vl.Versions {
+		for i := len(vl.Versions) - 1; i >= 0; i-- {
+			r := vl.Versions[i]
 			resp, err := http.Get(fmt.Sprintf(FilesAPI, name, s.Name, r.Number))
 			if err != nil {
 				panic(err.Error())
