@@ -14,30 +14,25 @@
 // limitations under the License.
 //
 
-package providers
+package cpan
 
 import (
-	"github.com/DataDrake/cuppa/providers/cpan"
 	"github.com/DataDrake/cuppa/results"
 )
 
-// Provider provides a common interface for each of the backend providers
-type Provider interface {
-	Latest(name string) (*results.Result, results.Status)
-	Match(query string) string
-	Name() string
-	Releases(name string) (*results.ResultSet, results.Status)
+// Releases is a collection of CPAN releases
+type Releases struct {
+	Releases []Release `json:"releases"`
 }
 
-// All returns a list of all available providers
-func All() []Provider {
-	return []Provider{
-		cpan.Provider{},
-		GitHubProvider{},
-		HackageProvider{},
-		JetBrainsProvider{},
-		LaunchpadProvider{},
-		PyPiProvider{},
-		RubygemsProvider{},
+// Convert turns Releases into a Cuppa ResultSet
+func (crs *Releases) Convert(name string) *results.ResultSet {
+	rs := results.NewResultSet(name)
+	for _, rel := range crs.Releases {
+		r := rel.Convert()
+		if r != nil {
+			rs.AddResult(r)
+		}
 	}
+	return rs
 }
