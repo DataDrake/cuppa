@@ -33,7 +33,7 @@ const (
 )
 
 // SearchRegex is the regexp for "search.cpan.org"
-var SearchRegex = regexp.MustCompile("http://search.cpan.org/CPAN/authors/id/(.*)")
+var SearchRegex = regexp.MustCompile("https?://*(?:/.*cpan.org)(?:/CPAN)?/authors/id/(.*)")
 
 // Provider is the upstream provider interface for CPAN
 type Provider struct{}
