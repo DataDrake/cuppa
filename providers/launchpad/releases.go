@@ -22,7 +22,7 @@ import (
 	"time"
 )
 
-// Release is an internal represnetation of a Launchpad Release
+// Release is an internal representation of a Launchpad Release
 type Release struct {
 	name     string
 	release  string
