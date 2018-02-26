@@ -31,7 +31,7 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 * FTP
 * Git
 
-### Stetch Goal Providers
+### Stretch Goal Providers
 * RSS
 * Sourceforge
 
