@@ -35,7 +35,7 @@ const (
 )
 
 // TarballRegex matches HAckage tarballs
-var TarballRegex = regexp.MustCompile("https?://hackage.haskell.org/package/(.*)-(.*)/.*.tar.gz")
+var TarballRegex = regexp.MustCompile("https?://hackage.haskell.org/package/.*/(.*)-(.*?).tar.gz")
 
 // Provider is the upstream provider interface for hackage
 type Provider struct{}
