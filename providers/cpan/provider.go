@@ -27,9 +27,7 @@ import (
 
 const (
 	// APIDist is the format string for the CPAN dist API
-	APIDist = "http://search.cpan.org/api/dist/%s"
-	// Source is the format string for CPAN tarballs
-	Source = "http://search.cpan.org/CPAN/authors/id/%s/%s/%s/%s"
+	API = "https://fastapi.metacpan.org/v1/download_url/%s"
 )
 
 // SearchRegex is the regexp for "search.cpan.org"
@@ -37,17 +35,6 @@ var SearchRegex = regexp.MustCompile("https?://*(?:/.*cpan.org)(?:/CPAN)?/author
 
 // Provider is the upstream provider interface for CPAN
 type Provider struct{}
-
-// Latest finds the newest release for a CPAN package
-func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
-	rs, s := c.Releases(name)
-	//Fail if not OK
-	if s != results.OK {
-		return
-	}
-	r = rs.First()
-	return
-}
 
 // Match checks to see if this provider can handle this kind of query
 func (c Provider) Match(query string) string {
@@ -58,8 +45,8 @@ func (c Provider) Match(query string) string {
 	sms := strings.Split(sm[1], "/")
 	filename := sms[len(sms)-1]
 	pieces := strings.Split(filename, "-")
-	pieces = pieces[0 : len(sms)-2]
-	return strings.Join(pieces, "-")
+	//pieces = pieces[0 : len(sms)-2]
+	return pieces[0]
 }
 
 // Name gives the name of this provider
@@ -67,10 +54,59 @@ func (c Provider) Name() string {
 	return "CPAN"
 }
 
+// Latest finds the newest release for a CPAN package
+func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
+	// Query the API
+	resp, err := http.Get(fmt.Sprintf(API, name))
+	if err != nil {
+		panic(err.Error())
+	}
+	defer resp.Body.Close()
+	// Translate Status Code
+	switch resp.StatusCode {
+	case 200:
+		s = results.OK
+	case 404:
+		s = results.NotFound
+	default:
+		s = results.Unavailable
+	}
+
+	// Fail if not OK
+	if s != results.OK {
+		return
+	}
+
+	dec := json.NewDecoder(resp.Body)
+	rs := &Release{}
+	err = dec.Decode(rs)
+	if err != nil {
+		panic(err.Error())
+	}
+	if len(rs.Error) > 0 {
+		s = results.NotFound
+		return
+	}
+	r = rs.Convert(name)
+	return
+}
+
+// Releases finds all matching releases for a CPAN package
+func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
+    r, s := c.Latest(name)
+    if s != results.OK {
+        return
+    }
+    rs = results.NewResultSet(name)
+    rs.AddResult(r)
+    return
+}
+
+/*
 // Releases finds all matching releases for a CPAN package
 func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
 	// Query the API
-	resp, err := http.Get(fmt.Sprintf(APIDist, name))
+	resp, err := http.Get(fmt.Sprintf(API, name))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -103,3 +139,4 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	rs = crs.Convert(name)
 	return
 }
+*/

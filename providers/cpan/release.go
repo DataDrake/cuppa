@@ -17,31 +17,28 @@
 package cpan
 
 import (
-	"fmt"
 	"github.com/DataDrake/cuppa/results"
 	"time"
 )
 
 // Release is a JSON representation of a CPAN release
 type Release struct {
-	Dist     string `json:"dist"`
-	Archive  string `json:"archive"`
-	Cpanid   string `json:"cpanid"`
 	Version  string `json:"version"`
-	Released string `json:"released"`
-	Error    string `json:"error"`
 	Status   string `json:"status"`
+    Date     string `json:"date"`
+    Location string `json:"download_url"`
+	Error    string `json:"error"`
 }
 
 // Convert turns a CPAN release into a Cuppa result
-func (cr *Release) Convert() *results.Result {
-	if cr.Status != "stable" {
+func (cr *Release) Convert(name string) *results.Result {
+	if cr.Status != "latest" {
 		return nil
 	}
 	r := &results.Result{}
-	r.Name = cr.Dist
+	r.Name = name
 	r.Version = cr.Version
-	r.Published, _ = time.Parse(time.RFC3339, cr.Released)
-	r.Location = fmt.Sprintf(Source, cr.Cpanid[0:1], cr.Cpanid[0:2], cr.Cpanid, cr.Archive)
+	r.Published, _ = time.Parse(time.RFC3339, cr.Date)
+	r.Location = cr.Location
 	return r
 }
