@@ -18,7 +18,6 @@
   revision = "98c0687043a6aceed32931ee03124e4b2bb15235"
 
 [[projects]]
-  branch = "master"
   name = "github.com/DataDrake/waterlog"
   packages = [
     ".",
@@ -26,6 +25,7 @@
     "level"
   ]
   revision = "e7ea7e6d740f0753b116c7f1366ec26db843e6a2"
+  version = "v1.0"
 
 [[projects]]
   name = "github.com/kisielk/gotool"
@@ -52,6 +52,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "68f8535e2eef3189b179e5dd17b983306dfbc711cafaf7770580a6b1fdaa7693"
+  inputs-digest = "2d8e4bde7de4c34acafd701ab8421895dfd5beb85c8c183c1ed3a21cd7c259d7"
   solver-name = "gps-cdcl"
   solver-version = 1

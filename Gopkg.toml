@@ -30,8 +30,8 @@
   name = "github.com/DataDrake/cli-ng"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/DataDrake/waterlog"
+  version = "1.0"
 
 [[constraint]]
   name = "github.com/kisielk/gotool"
