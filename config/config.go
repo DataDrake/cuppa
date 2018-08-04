@@ -17,32 +17,31 @@
 package config
 
 import (
-    "github.com/BurntSushi/toml"
-    "os/user"
-    "path/filepath"
+	"github.com/BurntSushi/toml"
+	"os/user"
+	"path/filepath"
 )
 
 // Config is the configuration for cuppa
 type Config struct {
-    Github struct {
-        Key string `toml:"key"`
-    } `toml:"github"`
+	Github struct {
+		Key string `toml:"key"`
+	} `toml:"github"`
 }
 
 // Global is the config for all of cuppa at runtime
 var Global Config
 
-
 // init loads the config if it exists
 func init() {
-    user, err := user.Current()
-    if err != nil {
-        return
-    }
-    Global = Config{}
-    configPath := filepath.Join(user.HomeDir, ".config", "cuppa")
-    _, err = toml.DecodeFile(configPath, &Global)
-    if err != nil {
-        return
-    }
+	user, err := user.Current()
+	if err != nil {
+		return
+	}
+	Global = Config{}
+	configPath := filepath.Join(user.HomeDir, ".config", "cuppa")
+	_, err = toml.DecodeFile(configPath, &Global)
+	if err != nil {
+		return
+	}
 }

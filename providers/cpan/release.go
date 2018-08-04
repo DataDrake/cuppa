@@ -25,8 +25,8 @@ import (
 type Release struct {
 	Version  string `json:"version"`
 	Status   string `json:"status"`
-    Date     string `json:"date"`
-    Location string `json:"download_url"`
+	Date     string `json:"date"`
+	Location string `json:"download_url"`
 	Error    string `json:"error"`
 }
 

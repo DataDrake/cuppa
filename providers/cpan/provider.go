@@ -93,13 +93,13 @@ func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 
 // Releases finds all matching releases for a CPAN package
 func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
-    r, s := c.Latest(name)
-    if s != results.OK {
-        return
-    }
-    rs = results.NewResultSet(name)
-    rs.AddResult(r)
-    return
+	r, s := c.Latest(name)
+	if s != results.OK {
+		return
+	}
+	rs = results.NewResultSet(name)
+	rs.AddResult(r)
+	return
 }
 
 /*
