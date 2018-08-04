@@ -8,14 +8,14 @@
   version = "v0.3.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/DataDrake/cli-ng"
   packages = [
     "cmd",
     "options",
     "translate"
   ]
-  revision = "98c0687043a6aceed32931ee03124e4b2bb15235"
+  revision = "8a8956931f206adbcb3d774a42cb89f6acd4f4eb"
+  version = "v1.0"
 
 [[projects]]
   name = "github.com/DataDrake/waterlog"
