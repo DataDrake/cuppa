@@ -31,7 +31,7 @@ const (
 	// APIReleases is a format string for the Releases API
 	APIReleases = "https://api.github.com/repos/%s/releases"
 	// APITags is a format string for the Tags API
-	APITags = "https://api.github.com/repos/%s/git/refs/tags"
+	APITags = "https://api.github.com/repos/%s/tags"
 	// SourceFormat is the format string for Github release tarballs
 	SourceFormat = "https://github.com/%s/archive/%s.tar.gz"
 )
@@ -67,7 +67,7 @@ func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 		if s != results.OK || rs.Empty() {
 			return
 		}
-		r = rs.Last()
+		r = rs.First()
 		return
 	default:
 		s = results.Unavailable

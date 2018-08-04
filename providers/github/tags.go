@@ -24,7 +24,7 @@ import (
 
 // Tag is a JSON representation of a Github tag
 type Tag struct {
-	Ref string `json:"ref"`
+	Name string `json:"name"`
 }
 
 // Convert turns a Github tag into a Cuppa result
@@ -32,7 +32,7 @@ func (t *Tag) Convert(name string) *results.Result {
 	r := &results.Result{}
 	pieces := strings.Split(name, "/")
 	r.Name = pieces[len(pieces)-1]
-	pieces = strings.Split(t.Ref, "/")
+	pieces = strings.Split(t.Name, "/")
 	r.Version = pieces[len(pieces)-1]
 	r.Location = fmt.Sprintf(SourceFormat, name, r.Version)
 	return r
