@@ -18,7 +18,7 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 
 ### Supported Providers
 * CPAN
-* Github
+* Github (with API Key support)
 * GNOME
 * Hackage
 * Jetbrains
@@ -42,7 +42,20 @@ Both of these will require some level of scraping to get useful info.
   Completely pointless as this will just pivot to another provider
 * Stackage
   Not really in scope for this project and they seem to be missing a web API
- 
+
+## Configuration
+
+### Github Personal Access Keys
+
+Github limits the number of requests per day for unauthenticated clients. If you would like to get 
+around this limitation, you can configure Cuppa to use a Personal Access Key (PAK).
+
+Example:
+``` toml
+[github]
+key = "<personal access key>"
+```
+
 ## License
  
 Copyright 2016-2018 Bryan T. Meyers <bmeyers@datadrake.com>
