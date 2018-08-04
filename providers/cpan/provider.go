@@ -26,8 +26,10 @@ import (
 )
 
 const (
-	// API is the format string for the metacpan download_url API
-	API = "https://fastapi.metacpan.org/v1/download_url/%s"
+	// APIRelease is the format string for the metacpan release API
+	APIRelease = "https://fastapi.metacpan.org/v1/release/%s"
+	// APIDownloadURL is the format string for the metacpan download_url API
+	APIDownloadURL = "https://fastapi.metacpan.org/v1/download_url/%s"
 )
 
 // SearchRegex is the regexp for "search.cpan.org"
@@ -45,8 +47,12 @@ func (c Provider) Match(query string) string {
 	sms := strings.Split(sm[1], "/")
 	filename := sms[len(sms)-1]
 	pieces := strings.Split(filename, "-")
-	//pieces = pieces[0 : len(sms)-2]
-	return pieces[0]
+	pieces = pieces[0 : len(sms)-2]
+    name := pieces[0]
+    if len(pieces) > 1 {
+        name = strings.Join(pieces, "-")
+    }
+	return name
 }
 
 // Name gives the name of this provider
@@ -54,10 +60,51 @@ func (c Provider) Name() string {
 	return "CPAN"
 }
 
+
+type CPANRelease struct {
+    Module string `json:"main_module"`
+}
+
+func nameToModule(name string) (module string, s results.Status) {
+	// Query the Release API
+	resp, err := http.Get(fmt.Sprintf(APIRelease, name))
+	if err != nil {
+		panic(err.Error())
+	}
+	defer resp.Body.Close()
+	// Translate Status Code
+	switch resp.StatusCode {
+	case 200:
+		s = results.OK
+	case 404:
+		s = results.NotFound
+	default:
+		s = results.Unavailable
+	}
+
+	// Fail if not OK
+	if s != results.OK {
+		return
+	}
+
+	dec := json.NewDecoder(resp.Body)
+	r := &CPANRelease{}
+	err = dec.Decode(r)
+	if err != nil {
+		panic(err.Error())
+	}
+    module = r.Module
+    return
+}
+
 // Latest finds the newest release for a CPAN package
 func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
-	// Query the API
-	resp, err := http.Get(fmt.Sprintf(API, name))
+	// Query the APIDownloadURL
+	module, s := nameToModule(name)
+    if s != results.OK {
+        return
+    }
+	resp, err := http.Get(fmt.Sprintf(APIDownloadURL, module))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -105,8 +152,12 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 /*
 // Releases finds all matching releases for a CPAN package
 func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
-	// Query the API
-	resp, err := http.Get(fmt.Sprintf(API, name))
+	// Query the APIDownloadURL
+	module, s:= nameToModule(name)
+	if s != results.OK {
+		return
+	}
+	resp, err := http.Get(fmt.Sprintf(APIDownloadURL, module))
 	if err != nil {
 		panic(err.Error())
 	}
