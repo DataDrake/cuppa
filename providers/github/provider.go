@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
+	"github.com/DataDrake/cuppa/config"
 	"net/http"
 	"regexp"
 )
@@ -47,7 +48,11 @@ type Provider struct{}
 // Latest finds the newest release for a github package
 func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 	// Query the API
-	resp, err := http.Get(fmt.Sprintf(APILatest, name))
+    req, _ := http.NewRequest("GET", fmt.Sprintf(APILatest, name), nil)
+    if key := config.Global.Github.Key; len(key) > 0 {
+        req.Header["Authorization"] = []string{"token " + key}
+    }
+    resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -99,7 +104,11 @@ func (c Provider) Name() string {
 
 func getTags(name string) (rs *results.ResultSet, s results.Status) {
 	// Query the API
-	resp, err := http.Get(fmt.Sprintf(APITags, name))
+    req, _ := http.NewRequest("GET", fmt.Sprintf(APITags, name), nil)
+    if key := config.Global.Github.Key; len(key) > 0 {
+        req.Header["Authorization"] = []string{"token " + key}
+    }
+    resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -136,7 +145,11 @@ func getTags(name string) (rs *results.ResultSet, s results.Status) {
 // Releases finds all matching releases for a github package
 func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
 	// Query the API
-	resp, err := http.Get(fmt.Sprintf(APIReleases, name))
+    req, _ := http.NewRequest("GET", fmt.Sprintf(APIReleases, name), nil)
+    if key := config.Global.Github.Key; len(key) > 0 {
+        req.Header["Authorization"] = []string{"token " + key}
+    }
+    resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		panic(err.Error())
 	}

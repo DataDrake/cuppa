@@ -1,5 +1,5 @@
 PKGNAME  = cuppa
-SUBPKGS  = cli providers results
+SUBPKGS  = cli config providers results
 PROJREPO = github.com/DataDrake
 
 include Makefile.golang
