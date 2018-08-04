@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	// APIDist is the format string for the CPAN dist API
+	// API is the format string for the metacpan download_url API
 	API = "https://fastapi.metacpan.org/v1/download_url/%s"
 )
 
