@@ -46,6 +46,8 @@ Both of these will require some level of scraping to get useful info.
 
 ## Configuration
 
+Your confiuguration file must be located at `$Home/.config/cuppa`
+
 ### Github Personal Access Keys
 
 Github limits the number of requests per day for unauthenticated clients. If you would like to get 
