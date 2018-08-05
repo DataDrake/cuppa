@@ -48,10 +48,10 @@ func (c Provider) Match(query string) string {
 	filename := sms[len(sms)-1]
 	pieces := strings.Split(filename, "-")
 	pieces = pieces[0 : len(sms)-2]
-    name := pieces[0]
-    if len(pieces) > 2 {
-        name = strings.Join(pieces, "-")
-    }
+	name := pieces[0]
+	if len(pieces) > 2 {
+		name = strings.Join(pieces, "-")
+	}
 	return name
 }
 
@@ -60,9 +60,8 @@ func (c Provider) Name() string {
 	return "CPAN"
 }
 
-
 type CPANRelease struct {
-    Module string `json:"main_module"`
+	Module string `json:"main_module"`
 }
 
 func nameToModule(name string) (module string, s results.Status) {
@@ -93,17 +92,17 @@ func nameToModule(name string) (module string, s results.Status) {
 	if err != nil {
 		panic(err.Error())
 	}
-    module = r.Module
-    return
+	module = r.Module
+	return
 }
 
 // Latest finds the newest release for a CPAN package
 func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 	// Query the APIDownloadURL
 	module, s := nameToModule(name)
-    if s != results.OK {
-        return
-    }
+	if s != results.OK {
+		return
+	}
 	resp, err := http.Get(fmt.Sprintf(APIDownloadURL, module))
 	if err != nil {
 		panic(err.Error())

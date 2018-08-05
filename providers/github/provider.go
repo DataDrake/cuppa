@@ -31,7 +31,7 @@ const (
 	// APIReleases is a format string for the Releases API
 	APIReleases = "https://api.github.com/repos/%s/releases"
 	// APITags is a format string for the Tags API
-	APITags = "https://api.github.com/repos/%s/tags"
+	APITags = "https://api.github.com/repos/%s/git/refs/tags"
 	// SourceFormat is the format string for Github release tarballs
 	SourceFormat = "https://github.com/%s/archive/%s.tar.gz"
 )
@@ -67,7 +67,7 @@ func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 		if s != results.OK || rs.Empty() {
 			return
 		}
-		r = rs.First()
+		r = rs.Last()
 		return
 	default:
 		s = results.Unavailable
@@ -100,46 +100,6 @@ func (c Provider) Match(query string) string {
 // Name gives the name of this provider
 func (c Provider) Name() string {
 	return "GitHub"
-}
-
-func getTags(name string) (rs *results.ResultSet, s results.Status) {
-	// Query the API
-	req, _ := http.NewRequest("GET", fmt.Sprintf(APITags, name), nil)
-	if key := config.Global.Github.Key; len(key) > 0 {
-		req.Header["Authorization"] = []string{"token " + key}
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		panic(err.Error())
-	}
-	defer resp.Body.Close()
-	// Translate Status Code
-	switch resp.StatusCode {
-	case 200:
-		s = results.OK
-	case 404:
-		s = results.NotFound
-	default:
-		s = results.Unavailable
-	}
-
-	// Fail if not OK
-	if s != results.OK {
-		return
-	}
-
-	dec := json.NewDecoder(resp.Body)
-	tags := make(Tags, 0)
-	err = dec.Decode(&tags)
-	if err != nil {
-		panic(err.Error())
-	}
-	if len(tags) == 0 {
-		s = results.NotFound
-		return
-	}
-	rs = tags.Convert(name)
-	return
 }
 
 // Releases finds all matching releases for a github package

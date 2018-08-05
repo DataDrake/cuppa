@@ -50,14 +50,14 @@ func (rs *ResultSet) First() *Result {
 
 // Last retrieves the first result from a query
 func (rs *ResultSet) Last() *Result {
-    switch len(rs.results) {
-    case 0:
-        return nil
-    case 1:
-        return rs.results[0]
-    default:
-	    return rs.results[len(rs.results)-1]
-    }
+	switch len(rs.results) {
+	case 0:
+		return nil
+	case 1:
+		return rs.results[0]
+	default:
+		return rs.results[len(rs.results)-1]
+	}
 }
 
 // PrintAll pretty-prints an entire ResultSet
