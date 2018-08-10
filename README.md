@@ -44,20 +44,57 @@ Both of these will require some level of scraping to get useful info.
 * Stackage
   Not really in scope for this project and they seem to be missing a web API
 
+## Installation
+
+1. Clone repo and enter its
+2. `make`
+3. `sudo make install`
+
 ## Configuration
 
-Your confiuguration file must be located at `$Home/.config/cuppa`
+Your configuration file must be located at `$HOME/.config/cuppa`
 
 ### Github Personal Access Keys
 
 Github limits the number of requests per day for unauthenticated clients. If you would like to get 
-around this limitation, you can configure Cuppa to use a Personal Access Key (PAK).
+around this limitation, you can configure Cuppa to use a Personal Access Key (PAK) by following the
+instructions [here](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/#creating-a-token). You do **not** need to enable any OAuth Scopes.
 
 Example:
 ``` toml
 [github]
 key = "<personal access key>"
 ```
+
+## Usage
+
+All `cuppa` commands follow the format:
+
+`cuppa CMD URL`
+
+where CMD is the action to perform and URL is the link to an existing source.
+
+### Commands (CMD)
+
+| CMD      | Alias | Description                                        |
+| -------- | ----- | -------------------------------------------------- |
+| help     |   ?   | Get help for the other commands.                   |
+| latest   |   l   | Get the details for the latest (non-beta) release. |
+| quick    |   q   | Get just the new version number and URL if found.  |
+| releases |   r   | Get all known previous (non-beta) releases.        |
+
+### Example Sources
+
+| Provider  | URL |
+| --------- | --- |
+| CPAN      | https://cpan.metacpan.org/authors/id/T/TO/TODDR/IO-1.39.tar.gz |
+| Github    | https://github.com/DataDrake/cuppa/archive/v1.0.4.tar.gz |
+| GNOME     | https://download.gnome.org/sources/gnome-music/3.28/gnome-music-3.28.2.tar.xz |
+| Hackage   | https://hackage.haskell.org/package/mtl-2.2.2/mtl-2.2.2.tar.gz |
+| JetBrains | https://download.jetbrains.com/ruby/RubyMine-2017.3.3.tar.gz |
+| Launchpad | https://launchpad.net/catfish-search/1.4/1.4.4/+download/catfish-1.4.4.tar.gz |
+| PyPi      | https://pypi.python.org/packages/2c/a9/69f67f6d5d2fd80ef3d60dc5bef4971d837dc741be0d53295d3aabb5ec7f/pyparted-3.10.7.tar.gz |
+| Rubygems  | https://rubygems.org/downloads/sass-3.4.25.gem |
 
 ## License
  
