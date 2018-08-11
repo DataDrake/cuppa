@@ -49,7 +49,7 @@ func (c Provider) Match(query string) string {
 	pieces := strings.Split(filename, "-")
 	pieces = pieces[0 : len(sms)-2]
 	name := pieces[0]
-	if len(pieces) > 2 {
+	if len(pieces) > 1 {
 		name = strings.Join(pieces, "-")
 	}
 	return name
