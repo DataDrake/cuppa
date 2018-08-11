@@ -52,10 +52,10 @@ setup-deps:
 	@if [ ! -e $(GOBIN)/dep ]; then \
 	    $(call task,Installing dep...); \
 	    $(GOGET) -d github.com/golang/dep/cmd/dep; \
-	    pushd build/src/github.com/golang/dep/cmd/dep; \
+	    cd build/src/github.com/golang/dep/cmd/dep; \
 	    git checkout tags/v0.4.1; \
 	    $(GOINSTALL) ./...; \
-	    popd; \
+	    cd $(GOPROJROOT)/$(PKGNAME); \
 	fi
 	@if [ ! -e $(GOBIN)/megacheck ]; then \
 	    $(call task,Installing megacheck...); \
