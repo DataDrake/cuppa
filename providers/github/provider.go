@@ -27,7 +27,7 @@ const (
 )
 
 // SourceRegex is the regex for Github sources
-var SourceRegex = regexp.MustCompile("github.com/([^/]*/[^/.]*)")
+var SourceRegex = regexp.MustCompile("github.com/([^/]+/[^/.]+)")
 
 // VersionRegex is used to parse Github version numbers
 var VersionRegex = regexp.MustCompile("(?:\\d+\\.)*\\d+\\w*")
@@ -42,6 +42,9 @@ func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 		return
 	}
 	r = rs.Last()
+	if r == nil {
+		s = results.NotFound
+	}
 	return
 }
 
