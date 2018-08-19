@@ -22,6 +22,7 @@ import (
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
 	"regexp"
+    "strings"
 )
 
 const (
@@ -32,7 +33,7 @@ const (
 )
 
 // TarballRegex matches PyPi source tarballs
-var TarballRegex = regexp.MustCompile("https?://pypi.python.org/packages/\\w+/\\w+/\\w+/(.+)-.+.tar.gz")
+var TarballRegex = regexp.MustCompile("https?://[^/]*py[^/]*/packages/(?:[^/]+/)+(.+)$")
 
 // Provider is the upstream provider interface for pypi
 type Provider struct{}
@@ -76,7 +77,11 @@ func (c Provider) Match(query string) string {
 	if len(sm) != 2 {
 		return ""
 	}
-	return sm[1]
+    pieces := strings.Split(sm[1], "-")
+    if len(pieces) > 2 {
+        return strings.Join(pieces[0:len(pieces)-1],"-")
+    }
+	return pieces[0]
 }
 
 // Name gives the name of this provider
