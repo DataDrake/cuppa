@@ -22,6 +22,7 @@ import (
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
 	"regexp"
+    "strings"
 )
 
 const (
@@ -34,7 +35,7 @@ const (
 )
 
 // GemRegex matches Rubygems sources
-var GemRegex = regexp.MustCompile("https?://rubygems.org/downloads/(.*)-.*\\.gem")
+var GemRegex = regexp.MustCompile("https?://rubygems.org/downloads/(.+).gem")
 
 // Provider is the upstream provider interface for rubygems
 type Provider struct{}
@@ -78,7 +79,11 @@ func (c Provider) Match(query string) string {
 	if len(sm) != 2 {
 		return ""
 	}
-	return sm[1]
+    pieces := strings.Split(sm[1], "-")
+    if len(pieces) > 2 {
+        return strings.Join(pieces[0:len(pieces)-1],"-")
+    }
+    return pieces[0]
 }
 
 // Name gives the name of this provider
