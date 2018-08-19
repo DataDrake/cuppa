@@ -33,7 +33,7 @@ const (
 )
 
 // SearchRegex is the regexp for "search.cpan.org"
-var SearchRegex = regexp.MustCompile("https?://*(?:/.*cpan.org)(?:/CPAN)?/authors/id/(.*)")
+var SearchRegex = regexp.MustCompile("https?://*(?:/.*cpan.org)(?:/CPAN)?/authors/id/(.+)$")
 
 // Provider is the upstream provider interface for CPAN
 type Provider struct{}
@@ -47,12 +47,10 @@ func (c Provider) Match(query string) string {
 	sms := strings.Split(sm[1], "/")
 	filename := sms[len(sms)-1]
 	pieces := strings.Split(filename, "-")
-	pieces = pieces[0 : len(sms)-2]
-	name := pieces[0]
-	if len(pieces) > 1 {
-		name = strings.Join(pieces, "-")
+	if len(pieces) > 2 {
+		return strings.Join(pieces[0:len(pieces)-1], "-")
 	}
-	return name
+	return pieces[0]
 }
 
 // Name gives the name of this provider
