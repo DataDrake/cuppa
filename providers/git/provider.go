@@ -53,7 +53,7 @@ func (p Provider) Latest(name string) (*results.Result, results.Status){
     err = repo.Fetch(&git2.FetchOptions{
         RemoteName: "origin",
         Tags: git2.AllTags,
-        Depth: 100,
+        Depth: 0,
     })
     if err != nil {
         return nil, results.NotFound
