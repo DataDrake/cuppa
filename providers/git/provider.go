@@ -58,6 +58,7 @@ func (p Provider) Latest(name string) (*results.Result, results.Status){
             r = &results.Result{
                 Name: repoName,
                 Version: tag,
+                Location: "git|" + name,
             }
         }
         line, _, err = read.ReadLine()
@@ -103,6 +104,7 @@ func (p Provider) Releases(name string) (*results.ResultSet, results.Status) {
             r = &results.Result{
                 Name: repoName,
                 Version: tag,
+                Location: "git|" + name,
             }
             rs.AddResult(r)
         }
