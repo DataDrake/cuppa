@@ -22,13 +22,9 @@ import (
     "github.com/DataDrake/cuppa/results"
     "io"
     "os/exec"
-    "regexp"
     "strings"
 )
 
-
-// SourceRegex is the regex for Git sources
-var SourceRegex = regexp.MustCompile("^(?:git|)?(.+)(?:\\.git)?$")
 
 // Provider provides a common interface for each of the backend providers
 type Provider struct {}
@@ -71,15 +67,14 @@ func (p Provider) Latest(name string) (*results.Result, results.Status){
 
 // Match checks to see if this provider can handle this kind of query
 func (p Provider) Match(query string) string {
-    sm := SourceRegex.FindStringSubmatch(query)
-    if len(sm) != 2 {
-        return ""
+    if strings.HasPrefix(query, "git|") || strings.HasSuffix(query, ".git") {
+        pieces := strings.Split(query, "|")
+        if len(pieces) > 1 {
+            return pieces[1]
+        }
+        return pieces[0]
     }
-    pieces := strings.Split(sm[1], "|")
-    if len(pieces) > 1 {
-        return pieces[1]
-    }
-    return pieces[0]
+    return ""
 }
 
 // Releases finds all matching releases for a Git package
