@@ -76,6 +76,7 @@ func (p Provider) Latest(name string) (*results.Result, results.Status){
         }
         return nil
     })
+    repo.DeleteRemote("origin")
     if r == nil {
         return nil, results.NotFound
     }
@@ -132,6 +133,7 @@ func (p Provider) Releases(name string) (*results.ResultSet, results.Status) {
         rs.AddResult(r)
         return nil
     })
+    repo.DeleteRemote("origin")
     if rs.Len() == 0 {
         return nil, results.NotFound
     }
