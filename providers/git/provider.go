@@ -17,11 +17,11 @@
 package git
 
 import (
+    "bufio"
+    "bytes"
     "github.com/DataDrake/cuppa/results"
-    git2 "gopkg.in/src-d/go-git.v4"
-    "gopkg.in/src-d/go-git.v4/config"
-    "gopkg.in/src-d/go-git.v4/plumbing/object"
-    "gopkg.in/src-d/go-git.v4/storage/memory"
+    "io"
+    "os/exec"
     "regexp"
     "strings"
 )
@@ -39,45 +39,30 @@ func (p Provider) Name() string {
 
 // Latest finds the newest release for a Git package
 func (p Provider) Latest(name string) (*results.Result, results.Status){
-    repo, err := git2.Init(memory.NewStorage(), nil)
-    if err != nil {
-        return nil, results.NotFound
-    }
-    _, err = repo.CreateRemote(&config.RemoteConfig{
-        Name: "origin",
-        URLs: []string{name},
-    })
-    if err != nil {
-        return nil, results.NotFound
-    }
-    err = repo.Fetch(&git2.FetchOptions{
-        RemoteName: "origin",
-        Tags: git2.AllTags,
-        Depth: 0,
-    })
-    if err != nil {
-        return nil, results.NotFound
-    }
-    tags, err := repo.TagObjects()
-    if err != nil {
-        return nil, results.NotFound
-    }
+    cmd := exec.Command("git", "ls-remote", "--tags", name)
+    buff := new(bytes.Buffer)
+    cmd.Stdout = buff
+    read := bufio.NewReader(buff)
+    err := cmd.Run()
+    line, _, err := read.ReadLine()
+    var r *results.Result
     pieces := strings.Split(name, "/")
     repoName := strings.Split(pieces[len(pieces)-1], ".")[0]
-    var r *results.Result
-    err = tags.ForEach(func(tag *object.Tag) error {
-        r2 := &results.Result{
-            Name: repoName,
-            Published: tag.Tagger.When,
-            Version: tag.Name,
+    for err == nil {
+        pieces := strings.Split(string(line), "/")
+        tag := pieces[0]
+        if len(pieces) > 1 {
+            tag = pieces[len(pieces)-1]
         }
-        if r == nil || r.Published.Before(r2.Published) {
-            r = r2
+        if !strings.HasSuffix(tag, "{}") {
+            r = &results.Result{
+                Name: repoName,
+                Version: tag,
+            }
         }
-        return nil
-    })
-    repo.DeleteRemote("origin")
-    if r == nil {
+        line, _, err = read.ReadLine()
+    }
+    if err != io.EOF || r == nil{
         return nil, results.NotFound
     }
     return r, results.OK
@@ -98,43 +83,32 @@ func (p Provider) Match(query string) string {
 
 // Releases finds all matching releases for a Git package
 func (p Provider) Releases(name string) (*results.ResultSet, results.Status) {
-    rs := results.NewResultSet(name)
-    repo, err := git2.Init(memory.NewStorage(), nil)
-    if err != nil {
-        panic(err.Error())
-    }
-    _, err = repo.CreateRemote(&config.RemoteConfig{
-        Name: "origin",
-        URLs: []string{name},
-    })
-    if err != nil {
-        panic(err.Error())
-    }
-    err = repo.Fetch(&git2.FetchOptions{
-        RemoteName: "origin",
-        Tags: git2.AllTags,
-        Depth: 100,
-    })
-    if err != nil {
-        panic(err.Error())
-    }
-    tags, err := repo.TagObjects()
-    if err != nil {
-        panic(err.Error())
-    }
+    cmd := exec.Command("git", "ls-remote", "--tags", name)
+    buff := new(bytes.Buffer)
+    cmd.Stdout = buff
+    read := bufio.NewReader(buff)
+    err := cmd.Run()
+    line, _, err := read.ReadLine()
+    var r *results.Result
     pieces := strings.Split(name, "/")
     repoName := strings.Split(pieces[len(pieces)-1], ".")[0]
-    err = tags.ForEach(func(tag *object.Tag) error {
-        r := &results.Result{
-            Name: repoName,
-            Published: tag.Tagger.When,
-            Version: tag.Name,
+    rs := results.NewResultSet(repoName)
+    for err == nil {
+        pieces := strings.Split(string(line), "/")
+        tag := pieces[0]
+        if len(pieces) > 1 {
+            tag = pieces[len(pieces)-1]
         }
-        rs.AddResult(r)
-        return nil
-    })
-    repo.DeleteRemote("origin")
-    if rs.Len() == 0 {
+        if !strings.HasSuffix(tag, "{}") {
+            r = &results.Result{
+                Name: repoName,
+                Version: tag,
+            }
+            rs.AddResult(r)
+        }
+        line, _, err = read.ReadLine()
+    }
+    if err != io.EOF || rs.Len() == 0 {
         return nil, results.NotFound
     }
     return rs, results.OK
