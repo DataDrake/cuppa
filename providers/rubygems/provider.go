@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"regexp"
     "strings"
+    "time"
 )
 
 const (
@@ -70,6 +71,7 @@ func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 		panic(err.Error())
 	}
 	r = cr.Convert(name)
+    time.Sleep(time.Second)
 	return
 }
 
