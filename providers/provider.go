@@ -18,6 +18,7 @@ package providers
 
 import (
 	"github.com/DataDrake/cuppa/providers/cpan"
+	"github.com/DataDrake/cuppa/providers/git"
 	"github.com/DataDrake/cuppa/providers/github"
 	"github.com/DataDrake/cuppa/providers/gnome"
 	"github.com/DataDrake/cuppa/providers/hackage"
@@ -40,6 +41,7 @@ type Provider interface {
 func All() []Provider {
 	return []Provider{
 		cpan.Provider{},
+		git.Provider{},
 		github.Provider{},
 		gnome.Provider{},
 		hackage.Provider{},
