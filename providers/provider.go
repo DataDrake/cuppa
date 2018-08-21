@@ -41,7 +41,6 @@ type Provider interface {
 func All() []Provider {
 	return []Provider{
 		cpan.Provider{},
-		git.Provider{},
 		github.Provider{},
 		gnome.Provider{},
 		hackage.Provider{},
@@ -49,5 +48,6 @@ func All() []Provider {
 		launchpad.Provider{},
 		pypi.Provider{},
 		rubygems.Provider{},
+		git.Provider{},
 	}
 }

@@ -41,14 +41,14 @@ func (p Provider) Name() string {
 func (p Provider) Latest(name string) (*results.Result, results.Status){
     repo, err := git2.Init(memory.NewStorage(), nil)
     if err != nil {
-        panic(err.Error())
+        return nil, results.NotFound
     }
     _, err = repo.CreateRemote(&config.RemoteConfig{
         Name: "origin",
         URLs: []string{name},
     })
     if err != nil {
-        panic(err.Error())
+        return nil, results.NotFound
     }
     err = repo.Fetch(&git2.FetchOptions{
         RemoteName: "origin",
@@ -56,11 +56,11 @@ func (p Provider) Latest(name string) (*results.Result, results.Status){
         Depth: 100,
     })
     if err != nil {
-        panic(err.Error())
+        return nil, results.NotFound
     }
     tags, err := repo.TagObjects()
     if err != nil {
-        panic(err.Error())
+        return nil, results.NotFound
     }
     pieces := strings.Split(name, "/")
     repoName := strings.Split(pieces[len(pieces)-1], ".")[0]
