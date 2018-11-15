@@ -22,8 +22,8 @@ import (
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
 	"regexp"
-    "strings"
-    "time"
+	"strings"
+	"time"
 )
 
 const (
@@ -71,7 +71,7 @@ func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 		panic(err.Error())
 	}
 	r = cr.Convert(name)
-    time.Sleep(time.Second)
+	time.Sleep(time.Second)
 	return
 }
 
@@ -81,11 +81,11 @@ func (c Provider) Match(query string) string {
 	if len(sm) != 2 {
 		return ""
 	}
-    pieces := strings.Split(sm[1], "-")
-    if len(pieces) > 2 {
-        return strings.Join(pieces[0:len(pieces)-1],"-")
-    }
-    return pieces[0]
+	pieces := strings.Split(sm[1], "-")
+	if len(pieces) > 2 {
+		return strings.Join(pieces[0:len(pieces)-1], "-")
+	}
+	return pieces[0]
 }
 
 // Name gives the name of this provider

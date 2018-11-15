@@ -1,6 +1,8 @@
 .idea/*
-build/*
+_build/*
 vendor/*
+cuppa
+
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
 *.a

@@ -22,7 +22,7 @@ import (
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
 	"regexp"
-    "strings"
+	"strings"
 )
 
 const (
@@ -77,10 +77,10 @@ func (c Provider) Match(query string) string {
 	if len(sm) != 2 {
 		return ""
 	}
-    pieces := strings.Split(sm[1], "-")
-    if len(pieces) > 2 {
-        return strings.Join(pieces[0:len(pieces)-1],"-")
-    }
+	pieces := strings.Split(sm[1], "-")
+	if len(pieces) > 2 {
+		return strings.Join(pieces[0:len(pieces)-1], "-")
+	}
 	return pieces[0]
 }
 
