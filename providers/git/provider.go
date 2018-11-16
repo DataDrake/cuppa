@@ -28,6 +28,7 @@ import (
 // Provider provides a common interface for each of the backend providers
 type Provider struct{}
 
+// Name returns the name of this provider
 func (p Provider) Name() string {
 	return "Git"
 }

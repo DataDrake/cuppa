@@ -58,7 +58,8 @@ func (c Provider) Name() string {
 	return "CPAN"
 }
 
-type CPANRelease struct {
+// APIModule holds the name of a Perl Module
+type APIModule struct {
 	Module string `json:"main_module"`
 }
 
@@ -85,7 +86,7 @@ func nameToModule(name string) (module string, s results.Status) {
 	}
 
 	dec := json.NewDecoder(resp.Body)
-	r := &CPANRelease{}
+	r := &APIModule{}
 	err = dec.Decode(r)
 	if err != nil {
 		panic(err.Error())
