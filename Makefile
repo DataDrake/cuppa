@@ -44,7 +44,7 @@ validate: setup-deps
 	@$(call pass,VET)
 	@$(call stage,LINT)
 	@$(call task,Running 'golint'...)
-	@$(GOLINT) ./...
+	@$(GOLINT) `go list ./... | grep -v vendor`
 	@$(call pass,LINT)
 
 setup-deps:
