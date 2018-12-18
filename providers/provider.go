@@ -27,6 +27,7 @@ import (
 	"github.com/DataDrake/cuppa/providers/launchpad"
 	"github.com/DataDrake/cuppa/providers/pypi"
 	"github.com/DataDrake/cuppa/providers/rubygems"
+	"github.com/DataDrake/cuppa/providers/sourceforge"
 	"github.com/DataDrake/cuppa/results"
 )
 
@@ -50,6 +51,7 @@ func All() []Provider {
 		launchpad.Provider{},
 		pypi.Provider{},
 		rubygems.Provider{},
+		sourceforge.Provider{},
 		git.Provider{},
 	}
 }

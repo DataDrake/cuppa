@@ -26,6 +26,7 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 * Launchpad
 * PyPi
 * RubyGems
+* Sourceforge
 
 ### Planned Providers
 * BitBucket
@@ -35,7 +36,6 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 
 ### Stretch Goal Providers
 * RSS
-* Sourceforge
 
 Both of these will require some level of scraping to get useful info.
 
