@@ -126,6 +126,9 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 			}
 			fields := strings.Fields(line)
 			version := fields[len(fields)-1]
+            if version[0] > 57 || version[0] < 48 {
+                continue
+            }
 			updated, _ := time.Parse("2006-01-02 15:04", strings.Join(fields[len(fields)-3:len(fields)-2], " "))
 			var location string
 			switch len(pieces) {
