@@ -23,6 +23,7 @@ import (
 	"github.com/DataDrake/cuppa/providers/gnome"
 	"github.com/DataDrake/cuppa/providers/hackage"
 	"github.com/DataDrake/cuppa/providers/jetbrains"
+	"github.com/DataDrake/cuppa/providers/kde"
 	"github.com/DataDrake/cuppa/providers/launchpad"
 	"github.com/DataDrake/cuppa/providers/pypi"
 	"github.com/DataDrake/cuppa/providers/rubygems"
@@ -45,6 +46,7 @@ func All() []Provider {
 		gnome.Provider{},
 		hackage.Provider{},
 		jetbrains.Provider{},
+		kde.Provider{},
 		launchpad.Provider{},
 		pypi.Provider{},
 		rubygems.Provider{},

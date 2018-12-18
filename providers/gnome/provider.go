@@ -29,7 +29,7 @@ import (
 const (
 	// CacheAPI is the string format for GNOME cache.json files
 	CacheAPI = "https://download.gnome.org/sources/%s/cache.json"
-	// SourceFormat is the string format for Gnome sources
+	// SourceFormat is the string format for GNOME sources
 	SourceFormat = "https://download.gnome.org/sources/%s/%s"
 )
 
@@ -39,7 +39,7 @@ var TarballRegex = regexp.MustCompile("https?://(?:ftp.gnome.org/pub/gnome|downl
 // Provider is the upstream provider interface for GNOME
 type Provider struct{}
 
-// Latest finds the newest release for a rubygems package
+// Latest finds the newest release for a GNOME package
 func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 	rs, s := c.Releases(name)
 	if s != results.OK {

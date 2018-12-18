@@ -22,6 +22,7 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 * GNOME
 * Hackage
 * Jetbrains
+* KDE
 * Launchpad
 * PyPi
 * RubyGems
@@ -92,6 +93,7 @@ where CMD is the action to perform and URL is the link to an existing source.
 | GNOME     | https://download.gnome.org/sources/gnome-music/3.28/gnome-music-3.28.2.tar.xz |
 | Hackage   | https://hackage.haskell.org/package/mtl-2.2.2/mtl-2.2.2.tar.gz |
 | JetBrains | https://download.jetbrains.com/ruby/RubyMine-2017.3.3.tar.gz |
+| KDE       | https://download.kde.org/stable/applications/18.12.0/src/akonadi-18.12.0.tar.xz |
 | Launchpad | https://launchpad.net/catfish-search/1.4/1.4.4/+download/catfish-1.4.4.tar.gz |
 | PyPi      | https://pypi.python.org/packages/2c/a9/69f67f6d5d2fd80ef3d60dc5bef4971d837dc741be0d53295d3aabb5ec7f/pyparted-3.10.7.tar.gz |
 | Rubygems  | https://rubygems.org/downloads/sass-3.4.25.gem |
