@@ -17,10 +17,11 @@
 package kde
 
 import (
-	"bufio"
+	"bytes"
 	"compress/bzip2"
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
+    "io/ioutil"
 	"net/http"
 	"regexp"
 	"strings"
@@ -36,13 +37,32 @@ const (
 	SourceFormat4 = "https://download.kde.org/%s/%s/%s/%s-%s.tar.bz2"
 	// SourceFormat5 is the string format for KDE sources with 5 pieces
 	SourceFormat5 = "https://download.kde.org/%s/%s/%s/%s/%s-%s.tar.bz2"
+	// SourceFormat6 is the string format for KDE sources with 6 pieces
+	SourceFormat6 = "https://download.kde.org/%s/%s/%s/%s/%s/%s-%s.tar.bz2"
 )
 
 // TarballRegex matches KDE sources
-var TarballRegex = regexp.MustCompile("https?://download.kde.org/(.+)")
+var TarballRegex = regexp.MustCompile("https?://.*download.kde.org/(.+)")
 
 // Provider is the upstream provider interface for KDE
 type Provider struct{}
+
+var listing []byte
+
+func getListing() {
+	// Query the API
+	resp, err := http.Get(ListingURL)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer resp.Body.Close()
+	// Translate Status Code
+    if resp.StatusCode != 200 {
+        return
+    }
+	body := bzip2.NewReader(resp.Body)
+	listing, _ = ioutil.ReadAll(body)
+}
 
 // Latest finds the newest release for a KDE package
 func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
@@ -61,7 +81,7 @@ func (c Provider) Match(query string) string {
 		return ""
 	}
 	pieces := strings.Split(sm[1], "/")
-	if len(pieces) < 4 || len(pieces) > 5 {
+	if len(pieces) < 4 || len(pieces) > 6 {
 		return ""
 	}
 	return sm[1]
@@ -74,40 +94,22 @@ func (c Provider) Name() string {
 
 // Releases finds all matching releases for a KDE package
 func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
-	// Query the API
-	resp, err := http.Get(ListingURL)
-	if err != nil {
-		panic(err.Error())
-	}
-	defer resp.Body.Close()
-	// Translate Status Code
-	switch resp.StatusCode {
-	case 200:
-		s = results.OK
-	case 404:
-		s = results.NotFound
-	default:
-		s = results.Unavailable
-	}
-	// Fail if not OK
-	if s != results.OK {
-		return
-	}
+    if len(listing) == 0 {
+        getListing()
+    }
+    buff := bytes.NewBuffer(listing)
 	pieces := strings.Split(name, "/")
 	name = strings.Split(pieces[len(pieces)-1], "-")[0]
 	var searchPrefix string
 	switch len(pieces) {
 	case 4:
 		searchPrefix = ListingPrefix + strings.Join(pieces[0:len(pieces)-2], "/") + ":\n"
-	case 5:
+	case 5,6:
 		searchPrefix = ListingPrefix + strings.Join(pieces[0:len(pieces)-3], "/") + ":\n"
 	}
-	body := bzip2.NewReader(resp.Body)
-	listing := bufio.NewReader(body)
 	rs = results.NewResultSet(name)
-	line := ""
 	for {
-		line, err = listing.ReadString('\n')
+		line, err := buff.ReadString('\n')
 		if err != nil {
 			break
 		}
@@ -115,7 +117,7 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 			continue
 		}
 		for line != "\n" {
-			line, err = listing.ReadString('\n')
+			line, err = buff.ReadString('\n')
 			if err != nil {
 				break
 			}
@@ -131,6 +133,8 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 				location = fmt.Sprintf(SourceFormat4, pieces[0], pieces[1], version, name, version)
 			case 5:
 				location = fmt.Sprintf(SourceFormat5, pieces[0], pieces[1], version, pieces[3], name, version)
+			case 6:
+				location = fmt.Sprintf(SourceFormat6, pieces[0], pieces[1], version, pieces[3], pieces[4], name, version)
 			}
 			r := &results.Result{
 				Name:      name,
