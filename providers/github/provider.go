@@ -64,6 +64,6 @@ func (c Provider) Name() string {
 
 // Releases finds all matching releases for a github package
 func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
-	rs, s = c.GetReleases(name, 50)
+	rs, s = c.GetReleases(name, 100)
 	return
 }
