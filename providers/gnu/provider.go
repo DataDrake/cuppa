@@ -30,7 +30,7 @@ const (
 )
 
 // MirrorsRegex is a regex for a GNU mirror source
-var MirrorsRegex = regexp.MustCompile("https?://[^\\/]+/gnu/(.+)/[^\\/]+$")
+var MirrorsRegex = regexp.MustCompile("(?:https?|ftp)://[^\\/]+/gnu/(.+)/[^\\/]+$")
 // TarballRegex is a regex for finding tarball files
 var TarballRegex = regexp.MustCompile("^(.+)-(.+)\\.tar\\..+z$")
 
