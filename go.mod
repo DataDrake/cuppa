@@ -11,6 +11,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/dep v0.5.0 // indirect
 	github.com/golang/lint v0.0.0-20181026193005-c67002cb31c3 // indirect
+	github.com/jlaffaye/ftp v0.0.0-20181101112434-47f21d10f0ee
 	github.com/jmank88/nuts v0.3.0 // indirect
 	github.com/kisielk/gotool v1.0.0
 	github.com/leonelquinteros/gotext v1.3.1

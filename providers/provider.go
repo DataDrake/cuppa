@@ -21,6 +21,7 @@ import (
 	"github.com/DataDrake/cuppa/providers/git"
 	"github.com/DataDrake/cuppa/providers/github"
 	"github.com/DataDrake/cuppa/providers/gnome"
+	"github.com/DataDrake/cuppa/providers/gnu"
 	"github.com/DataDrake/cuppa/providers/hackage"
 	"github.com/DataDrake/cuppa/providers/jetbrains"
 	"github.com/DataDrake/cuppa/providers/kde"
@@ -45,6 +46,7 @@ func All() []Provider {
 		cpan.Provider{},
 		github.Provider{},
 		gnome.Provider{},
+		gnu.Provider{},
 		hackage.Provider{},
 		jetbrains.Provider{},
 		kde.Provider{},
