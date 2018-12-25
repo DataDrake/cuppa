@@ -26,4 +26,9 @@ var upstreams = []Upstream{
         HostPattern: regexp.MustCompile("^(https?://.*freedesktop.org/.+\\/)([^\\/]+)-.+?$"),
         Conf: HTTPDConfig,
     },
+    {
+        Name: "xorg",
+        HostPattern: regexp.MustCompile("^(https?://.*x.org/.+\\/)([^\\/]+)-.+?$"),
+        Conf: HTTPDConfig,
+    },
 }
