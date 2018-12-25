@@ -34,7 +34,7 @@ const (
 )
 
 // TarballRegex matches GNOME sources
-var TarballRegex = regexp.MustCompile("https?://(?:ftp.gnome.org/pub/gnome|download.gnome.org)/sources/(.*?)/.*")
+var TarballRegex = regexp.MustCompile("https?://(?:ftp.gnome.org/pub/gnome|download.gnome.org)/sources/(.+?)/.*")
 
 // Provider is the upstream provider interface for GNOME
 type Provider struct{}
