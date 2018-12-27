@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -68,7 +69,9 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	// Query the API
 	resp, err := http.Get(fmt.Sprintf(CacheAPI, name))
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
@@ -90,7 +93,9 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	raw := make([]interface{}, 0)
 	err = dec.Decode(&raw)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	if len(raw) < 3 {
 		s = results.Unavailable

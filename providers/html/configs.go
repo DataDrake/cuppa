@@ -17,17 +17,18 @@
 package html
 
 import (
-    "regexp"
+	"regexp"
 )
 
-var HTTPDConfig = Config {
-    Location: LocationConfig{
-        Index: 1,
-        XML: true,
-        Pattern: regexp.MustCompile(">(.+)<"),
-    },
-    Modified: TimeConfig{
-        Index: 2,
-        Layout: "2006-01-02 15:04",
-    },
+// HTTPDConfig is a configuration for a standard Apache httpd directory listing
+var HTTPDConfig = Config{
+	Location: LocationConfig{
+		Index:   1,
+		XML:     true,
+		Pattern: regexp.MustCompile(">(.+)<"),
+	},
+	Modified: TimeConfig{
+		Index:  2,
+		Layout: "2006-01-02 15:04",
+	},
 }

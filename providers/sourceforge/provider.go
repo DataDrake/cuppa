@@ -17,55 +17,60 @@
 package sourceforge
 
 import (
-    "encoding/xml"
+	"encoding/xml"
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
+	"os"
 	"regexp"
 	"time"
 )
 
 const (
-	// ListingURL is the location of the SourceForge FTP file listing
+	// API is the format string for a sourceforge RSS feed
 	API = "https://sourceforge.net/projects/%s/rss?path=/%s"
 )
 
 // TarballRegex matches SourceForge sources
 var TarballRegex = regexp.MustCompile("https?://.*sourceforge.net/projects/(.+)/files/(.+)/(.+?)-([\\d]+(?:.\\d+)*\\w*?).+$")
+
 // ProjectRegex matches SourceForge sources
 var ProjectRegex = regexp.MustCompile("https?://.*sourceforge.net/project/(.+?)/(.+)/(?:.+?/)?(.+?)-([\\d]+(?:.\\d+)*\\w*?).+$")
 
 // Provider is the upstream provider interface for SourceForge
 type Provider struct{}
 
+// Item represents an entry in the RSS Feed
 type Item struct {
-    XMLName xml.Name `xml:"item"`
-    Link string `xml:"link"`
-    Date string `xml:"pubDate"`
+	XMLName xml.Name `xml:"item"`
+	Link    string   `xml:"link"`
+	Date    string   `xml:"pubDate"`
 }
 
+// Feed represents the RSS feed itself
 type Feed struct {
-    XMLName xml.Name `xml:"rss"`
-    Items []Item `xml:"channel>item"`
+	XMLName xml.Name `xml:"rss"`
+	Items   []Item   `xml:"channel>item"`
 }
 
+// toResults converts a Feed to a ResultSet
 func (f *Feed) toResults(name string) *results.ResultSet {
-    rs := results.NewResultSet(name)
-    for _, item := range f.Items {
-        sm := TarballRegex.FindStringSubmatch(item.Link)
-        if len(sm) != 5 {
-            continue
-        }
-        pub, _ := time.Parse(time.RFC1123, item.Date + "C")
-        r := &results.Result {
-            Name: name,
-            Version: sm[4],
-            Location: item.Link,
-            Published: pub,
-        }
-        rs.AddResult(r)
-    }
-    return rs
+	rs := results.NewResultSet(name)
+	for _, item := range f.Items {
+		sm := TarballRegex.FindStringSubmatch(item.Link)
+		if len(sm) != 5 {
+			continue
+		}
+		pub, _ := time.Parse(time.RFC1123, item.Date+"C")
+		r := &results.Result{
+			Name:      name,
+			Version:   sm[4],
+			Location:  item.Link,
+			Published: pub,
+		}
+		rs.AddResult(r)
+	}
+	return rs
 }
 
 // Latest finds the newest release for a SourceForge package
@@ -82,10 +87,10 @@ func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 func (c Provider) Match(query string) string {
 	sm := TarballRegex.FindStringSubmatch(query)
 	if len(sm) != 5 {
-        sm = ProjectRegex.FindStringSubmatch(query)
-        if len(sm) != 5 {
-		    return ""
-        }
+		sm = ProjectRegex.FindStringSubmatch(query)
+		if len(sm) != 5 {
+			return ""
+		}
 	}
 	return sm[0]
 }
@@ -97,40 +102,44 @@ func (c Provider) Name() string {
 
 // Releases finds all matching releases for a SourceForge package
 func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
-    sm := TarballRegex.FindStringSubmatch(name)
+	sm := TarballRegex.FindStringSubmatch(name)
 	if len(sm) != 5 {
-        sm = ProjectRegex.FindStringSubmatch(name)
+		sm = ProjectRegex.FindStringSubmatch(name)
 	}
-    // Query the API
-    resp, err := http.Get(fmt.Sprintf(API, sm[1], sm[2]))
-    if err != nil {
-        panic(err.Error())
-    }
-    defer resp.Body.Close()
-    // Translate Status Code
-    switch resp.StatusCode {
-    case 200:
-        s = results.OK
-    case 404:
-        s = results.NotFound
-    default:
-        s = results.Unavailable
-    }
+	// Query the API
+	resp, err := http.Get(fmt.Sprintf(API, sm[1], sm[2]))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
+	}
+	defer resp.Body.Close()
+	// Translate Status Code
+	switch resp.StatusCode {
+	case 200:
+		s = results.OK
+	case 404:
+		s = results.NotFound
+	default:
+		s = results.Unavailable
+	}
 
-    // Fail if not OK
-    if s != results.OK {
-        return
-    }
+	// Fail if not OK
+	if s != results.OK {
+		return
+	}
 
-    dec := xml.NewDecoder(resp.Body)
-    feed := &Feed{}
-    err = dec.Decode(feed)
-    if err != nil {
-        panic(err.Error())
-    }
-    rs = feed.toResults(sm[3])
-    if rs.Len() == 0 {
-        s = results.NotFound
-    }
-    return
+	dec := xml.NewDecoder(resp.Body)
+	feed := &Feed{}
+	err = dec.Decode(feed)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
+	}
+	rs = feed.toResults(sm[3])
+	if rs.Len() == 0 {
+		s = results.NotFound
+	}
+	return
 }

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -67,7 +68,9 @@ func nameToModule(name string) (module string, s results.Status) {
 	// Query the Release API
 	resp, err := http.Get(fmt.Sprintf(APIRelease, name))
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
@@ -89,7 +92,9 @@ func nameToModule(name string) (module string, s results.Status) {
 	r := &APIModule{}
 	err = dec.Decode(r)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	module = r.Module
 	return
@@ -104,7 +109,9 @@ func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 	}
 	resp, err := http.Get(fmt.Sprintf(APIDownloadURL, module))
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
@@ -126,7 +133,9 @@ func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 	rs := &Release{}
 	err = dec.Decode(rs)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	if len(rs.Error) > 0 {
 		s = results.NotFound
@@ -146,46 +155,3 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	rs.AddResult(r)
 	return
 }
-
-/*
-// Releases finds all matching releases for a CPAN package
-func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
-	// Query the APIDownloadURL
-	module, s:= nameToModule(name)
-	if s != results.OK {
-		return
-	}
-	resp, err := http.Get(fmt.Sprintf(APIDownloadURL, module))
-	if err != nil {
-		panic(err.Error())
-	}
-	defer resp.Body.Close()
-	// Translate Status Code
-	switch resp.StatusCode {
-	case 200:
-		s = results.OK
-	case 404:
-		s = results.NotFound
-	default:
-		s = results.Unavailable
-	}
-
-	// Fail if not OK
-	if s != results.OK {
-		return
-	}
-
-	dec := json.NewDecoder(resp.Body)
-	crs := &Releases{}
-	err = dec.Decode(crs)
-	if err != nil {
-		panic(err.Error())
-	}
-	if len(crs.Releases) == 0 {
-		s = results.NotFound
-		return
-	}
-	rs = crs.Convert(name)
-	return
-}
-*/

@@ -21,8 +21,9 @@ import (
 	"compress/bzip2"
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
-    "io/ioutil"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -53,13 +54,14 @@ func getListing() {
 	// Query the API
 	resp, err := http.Get(ListingURL)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
-    if resp.StatusCode != 200 {
-        return
-    }
+	if resp.StatusCode != 200 {
+		return
+	}
 	body := bzip2.NewReader(resp.Body)
 	listing, _ = ioutil.ReadAll(body)
 }
@@ -94,17 +96,17 @@ func (c Provider) Name() string {
 
 // Releases finds all matching releases for a KDE package
 func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
-    if len(listing) == 0 {
-        getListing()
-    }
-    buff := bytes.NewBuffer(listing)
+	if len(listing) == 0 {
+		getListing()
+	}
+	buff := bytes.NewBuffer(listing)
 	pieces := strings.Split(name, "/")
 	name = strings.Split(pieces[len(pieces)-1], "-")[0]
 	var searchPrefix string
 	switch len(pieces) {
 	case 4:
 		searchPrefix = ListingPrefix + strings.Join(pieces[0:len(pieces)-2], "/") + ":\n"
-	case 5,6:
+	case 5, 6:
 		searchPrefix = ListingPrefix + strings.Join(pieces[0:len(pieces)-3], "/") + ":\n"
 	}
 	rs = results.NewResultSet(name)
@@ -126,9 +128,9 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 			}
 			fields := strings.Fields(line)
 			version := fields[len(fields)-1]
-            if version[0] > 57 || version[0] < 48 {
-                continue
-            }
+			if version[0] > 57 || version[0] < 48 {
+				continue
+			}
 			updated, _ := time.Parse("2006-01-02 15:04", strings.Join(fields[len(fields)-3:len(fields)-2], " "))
 			var location string
 			switch len(pieces) {

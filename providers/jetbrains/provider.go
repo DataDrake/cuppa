@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -63,7 +64,9 @@ func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 	code := ReleaseCodes[name]
 	resp, err := http.Get(fmt.Sprintf(LatestAPI, code))
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
@@ -85,7 +88,9 @@ func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 	jbs := make(Releases)
 	err = dec.Decode(&jbs)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	if jbs[code] == nil || len(jbs[code]) == 0 {
 		s = results.NotFound
@@ -115,7 +120,9 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	code := ReleaseCodes[name]
 	resp, err := http.Get(fmt.Sprintf(ReleasesAPI, code))
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
@@ -137,7 +144,9 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	jbs := make(Releases)
 	err = dec.Decode(&jbs)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	if jbs[code] == nil || len(jbs[code]) == 0 {
 		s = results.NotFound

@@ -23,6 +23,7 @@ import (
 	"github.com/DataDrake/cuppa/config"
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -124,7 +125,9 @@ func (c Provider) GetReleases(name string, max int) (rs *results.ResultSet, s re
 	enc := json.NewEncoder(buff)
 	err := enc.Encode(&query)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	// Query the API
 	req, _ := http.NewRequest("POST", GraphQLAPI, buff)
@@ -133,7 +136,9 @@ func (c Provider) GetReleases(name string, max int) (rs *results.ResultSet, s re
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
@@ -156,7 +161,9 @@ func (c Provider) GetReleases(name string, max int) (rs *results.ResultSet, s re
 	rqr := &RepoQueryResult{}
 	err = dec.Decode(rqr)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	rs = rqr.Convert(name)
 	return

@@ -17,8 +17,10 @@
 package html
 
 import (
+	"fmt"
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
+	"os"
 )
 
 // Provider is the upstream provider interface for HTML
@@ -36,12 +38,12 @@ func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 
 // Match checks to see if this provider can handle this kind of query
 func (c Provider) Match(query string) string {
-    for _, upstream := range upstreams {
-        name := upstream.Match(query)
-        if len(name) != 0 {
-            return name
-        }
-    }
+	for _, upstream := range upstreams {
+		name := upstream.Match(query)
+		if len(name) != 0 {
+			return name
+		}
+	}
 	return ""
 }
 
@@ -52,17 +54,19 @@ func (c Provider) Name() string {
 
 // Releases finds all matching releases for a rubygems package
 func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
-    var upstream Upstream
-    for i := range upstreams {
-        if len(upstreams[i].Match(name)) != 0 {
-            upstream = upstreams[i]
-            break
-        }
-    }
-    sm := upstream.HostPattern.FindStringSubmatch(name)
+	var upstream Upstream
+	for i := range upstreams {
+		if len(upstreams[i].Match(name)) != 0 {
+			upstream = upstreams[i]
+			break
+		}
+	}
+	sm := upstream.HostPattern.FindStringSubmatch(name)
 	resp, err := http.Get(sm[1])
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
@@ -78,9 +82,9 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	if s != results.OK {
 		return
 	}
-    rs, err = upstream.Parse(name, resp.Body)
-    if err != nil {
-        s = results.NotFound
-    }
+	rs, err = upstream.Parse(name, resp.Body)
+	if err != nil {
+		s = results.NotFound
+	}
 	return
 }

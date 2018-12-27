@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -43,7 +44,9 @@ func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 	// Query the API
 	resp, err := http.Get(fmt.Sprintf(SourceAPI, name))
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
@@ -65,7 +68,9 @@ func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 	cr := &LatestSource{}
 	err = dec.Decode(cr)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	r = cr.Convert(name)
 	return
@@ -94,7 +99,9 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	// Query the API
 	resp, err := http.Get(fmt.Sprintf(SourceAPI, name))
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
@@ -116,7 +123,9 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	crs := &Releases{}
 	err = dec.Decode(crs)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	if len(crs.Releases) == 0 {
 		s = results.NotFound

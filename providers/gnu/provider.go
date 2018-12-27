@@ -19,18 +19,21 @@ package gnu
 import (
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
-    "github.com/jlaffaye/ftp"
+	"github.com/jlaffaye/ftp"
 	"regexp"
-    "sort"
+	"sort"
 )
 
 const (
-    MirrorsFTP = "mirrors.rit.edu:21"
-    GNUFormat = "https://mirrors.rit.edu/gnu/%s/%s"
+	// MirrorsFTP is the host to use as a GNU mirror
+	MirrorsFTP = "mirrors.rit.edu:21"
+	// GNUFormat is the format string for GNU sources
+	GNUFormat = "https://mirrors.rit.edu/gnu/%s/%s"
 )
 
 // MirrorsRegex is a regex for a GNU mirror source
 var MirrorsRegex = regexp.MustCompile("(?:https?|ftp)://[^\\/]+/gnu/(.+)/[^\\/]+$")
+
 // TarballRegex is a regex for finding tarball files
 var TarballRegex = regexp.MustCompile("^(.+)-(.+)\\.tar\\..+z$")
 
@@ -53,49 +56,49 @@ func (c Provider) Name() string {
 
 // Latest finds the newest release for a GNU package
 func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
-    rs, s := c.Releases(name)
-    if s == results.OK {
-        sort.Sort(rs)
-        r = rs.Last()
-    }
+	rs, s := c.Releases(name)
+	if s == results.OK {
+		sort.Sort(rs)
+		r = rs.Last()
+	}
 	return
 }
 
 // Releases finds all matching releases for a GNU package
 func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
-    client, err := ftp.Dial(MirrorsFTP)
-    if err != nil {
-        s = results.Unavailable
-        return
-    }
-    err = client.Login("anonymous","anonymous")
-    if err != nil {
-        s = results.Unavailable
-        return
-    }
-    entries, err := client.List("gnu" + "/" + name)
-    if err != nil {
-        fmt.Printf("FTP Error: %s\n", err.Error())
-        s = results.NotFound
-        return
-    }
+	client, err := ftp.Dial(MirrorsFTP)
+	if err != nil {
+		s = results.Unavailable
+		return
+	}
+	err = client.Login("anonymous", "anonymous")
+	if err != nil {
+		s = results.Unavailable
+		return
+	}
+	entries, err := client.List("gnu" + "/" + name)
+	if err != nil {
+		fmt.Printf("FTP Error: %s\n", err.Error())
+		s = results.NotFound
+		return
+	}
 	rs = results.NewResultSet(name)
-    for _, entry := range entries {
-        if entry.Type != ftp.EntryTypeFile {
-            continue
-        }
-        sm := TarballRegex.FindStringSubmatch(entry.Name)
-        if len(sm) == 0 {
-            continue
-        }
-        r := &results.Result {
-            Name: sm[1],
-            Version: sm[2],
-            Location: fmt.Sprintf(GNUFormat, name, entry.Name),
-            Published: entry.Time,
-        }
-    	rs.AddResult(r)
-        s = results.OK
-    }
+	for _, entry := range entries {
+		if entry.Type != ftp.EntryTypeFile {
+			continue
+		}
+		sm := TarballRegex.FindStringSubmatch(entry.Name)
+		if len(sm) == 0 {
+			continue
+		}
+		r := &results.Result{
+			Name:      sm[1],
+			Version:   sm[2],
+			Location:  fmt.Sprintf(GNUFormat, name, entry.Name),
+			Published: entry.Time,
+		}
+		rs.AddResult(r)
+		s = results.OK
+	}
 	return
 }

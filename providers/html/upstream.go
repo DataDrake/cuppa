@@ -18,25 +18,28 @@ package html
 
 import (
 	"github.com/DataDrake/cuppa/results"
-    "io"
+	"io"
 	"regexp"
 )
 
+// Upstream pairs a Source matching Regex with a Config
 type Upstream struct {
-    Name        string
-    HostPattern *regexp.Regexp
-    Conf        Config
+	Name        string
+	HostPattern *regexp.Regexp
+	Conf        Config
 }
 
+// Match checks if the provided path matches HostPattern
 func (u Upstream) Match(path string) string {
-    sm := u.HostPattern.FindStringSubmatch(path)
-    if len(sm) == 0 {
-        return ""
-    }
-    return sm[0]
+	sm := u.HostPattern.FindStringSubmatch(path)
+	if len(sm) == 0 {
+		return ""
+	}
+	return sm[0]
 }
 
-func (u Upstream) Parse(name string, in io.Reader) (*results.ResultSet, error){
-    sm := u.HostPattern.FindStringSubmatch(name)
-    return u.Conf.Parse(sm[2],sm[1], in)
+// Parse reads a directory listing for a given path and Upstream
+func (u Upstream) Parse(name string, in io.Reader) (*results.ResultSet, error) {
+	sm := u.HostPattern.FindStringSubmatch(name)
+	return u.Conf.Parse(sm[2], sm[1], in)
 }

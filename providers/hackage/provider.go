@@ -22,6 +22,7 @@ import (
 	"github.com/DataDrake/cuppa/results"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
 )
 
@@ -71,7 +72,9 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	// Query the API
 	r, err := http.NewRequest("GET", fmt.Sprintf(VersionsAPI, name), nil)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	r.Header.Set("Accept", "application/json")
 
@@ -79,7 +82,9 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 
 	resp, err := client.Do(r)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
@@ -101,7 +106,9 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	versions := &Versions{}
 	err = dec.Decode(versions)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 
 	hrs := &Releases{}
@@ -112,12 +119,14 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 		}
 		r, err := http.Get(fmt.Sprintf(UploadTimeAPI, name, v))
 		if err != nil {
-			panic(err.Error())
+			fmt.Fprintln(os.Stderr, err.Error())
+			continue
 		}
 		defer r.Body.Close()
 		dateRaw, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			panic(err.Error())
+			fmt.Fprintln(os.Stderr, err.Error())
+			continue
 		}
 		hr.released = string(dateRaw)
 		hrs.Releases = append(hrs.Releases, hr)

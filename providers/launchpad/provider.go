@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
 	"net/http"
+	"os"
 	"regexp"
 )
 
@@ -72,7 +73,9 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	// Query the API
 	r, err := http.NewRequest("GET", fmt.Sprintf(SeriesAPI, name), nil)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	r.Header.Set("Accept", "application/json")
 
@@ -80,7 +83,9 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 
 	resp, err := client.Do(r)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
@@ -102,7 +107,9 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	seriesList := &SeriesList{}
 	err = dec.Decode(seriesList)
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		s = results.Unavailable
+		return
 	}
 
 	lrs := make(Releases, 0)
@@ -122,25 +129,29 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 		}
 		r, err := http.Get(fmt.Sprintf(ReleasesAPI, name, s.Name))
 		if err != nil {
-			panic(err.Error())
+			fmt.Fprintln(os.Stderr, err.Error())
+			continue
 		}
 		dec := json.NewDecoder(r.Body)
 		vl := &VersionList{}
 		err = dec.Decode(vl)
 		if err != nil {
-			panic(err.Error())
+			fmt.Fprintln(os.Stderr, err.Error())
+			continue
 		}
 		for i := len(vl.Versions) - 1; i >= 0; i-- {
 			r := vl.Versions[i]
 			resp, err := http.Get(fmt.Sprintf(FilesAPI, name, s.Name, r.Number))
 			if err != nil {
-				panic(err.Error())
+				fmt.Fprintln(os.Stderr, err.Error())
+				continue
 			}
 			dec := json.NewDecoder(resp.Body)
 			fl := &FileList{}
 			err = dec.Decode(fl)
 			if err != nil {
-				panic(err.Error())
+				fmt.Fprintln(os.Stderr, err.Error())
+				continue
 			}
 			lr := Release{}
 			for _, f := range fl.Files {
