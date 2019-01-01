@@ -101,7 +101,14 @@ func NewVersion(raw string) Version {
 	}
 	if len(v) == 0 {
 		v = append(v, "N/A")
-	}
+	} else {
+        // Strip trailing words
+        i := len(v)-1
+        for i >= 0 && !unicode.IsDigit(rune(v[i][0])) {
+            i--
+        }
+        v = v[:i+1]
+    }
 	return v
 }
 

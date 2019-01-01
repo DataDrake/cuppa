@@ -32,7 +32,7 @@ func NewResultSet(query string) *ResultSet {
 	return &ResultSet{make([]*Result, 0), query}
 }
 
-var skipWords = []string{"rc", "RC", "beta", "Beta", "BETA", "dev", "DEV", "unstable", "Unstable", "UNSTABLE", "eap", "EAP"}
+var skipWords = []string{"rc", "RC", "alpha", "Alpha", "ALPHA", "beta", "Beta", "BETA", "dev", "DEV", "unstable", "Unstable", "UNSTABLE", "eap", "EAP"}
 
 // AddResult appends a new Result
 func (rs *ResultSet) AddResult(r *Result) {
