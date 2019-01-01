@@ -51,5 +51,5 @@ func (r *Result) Print() {
 
 // PrintSimple only prints the version and the location of the latest release
 func (r *Result) PrintSimple() {
-	fmt.Printf("%s %s\n", r.Version, r.Location)
+	fmt.Printf("%s %s\n", strings.Join(r.Version,"."), r.Location)
 }
