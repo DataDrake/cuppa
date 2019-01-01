@@ -32,7 +32,7 @@ const (
 )
 
 // TarballRegex matches SourceForge sources
-var TarballRegex = regexp.MustCompile("https?://.*sourceforge.net/projects/(.+)/files/(.+)/(.+?)-([\\d]+(?:.\\d+)*\\w*?)\\.(?:zip|.+z)$")
+var TarballRegex = regexp.MustCompile("https?://.*sourceforge.net/projects/(.+)/files/(.+)/(.+?)-([\\d]+(?:.\\d+)*\\w*?)\\.(?:zip|tar\\..+z.*)$")
 
 // ProjectRegex matches SourceForge sources
 var ProjectRegex = regexp.MustCompile("https?://.*sourceforge.net/project/(.+?)/(.+)/(?:.+?/)?(.+?)-([\\d]+(?:.\\d+)*\\w*?).+$")
