@@ -100,8 +100,8 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	sm := TarballRegex.FindStringSubmatch(name)
 	if len(sm) != 5 {
 		sm = ProjectRegex.FindStringSubmatch(name)
-        sm[1], sm[3] = sm[3], sm[1]
-    }
+		sm[1], sm[3] = sm[3], sm[1]
+	}
 	// Query the API
 	resp, err := http.Get(fmt.Sprintf(API, sm[1], sm[2]))
 	if err != nil {
