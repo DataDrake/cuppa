@@ -35,7 +35,7 @@ const (
 var TarballRegex = regexp.MustCompile("https?://.*sourceforge.net/projects?/(.+)/files/(.+/)?(.+?)-([\\d]+(?:.\\d+)*\\w*?)\\.(?:zip|tar\\..+z.*)(?:\\/download)?$")
 
 // ProjectRegex matches SourceForge sources
-var ProjectRegex = regexp.MustCompile("https?://.*sourceforge.net/projects?/(.+)/files/(.+?/)?(.+?)-([\\d]+(?:.\\d+)*\\w*?).+$")
+var ProjectRegex = regexp.MustCompile("https?://.*sourceforge.net/projects?/(.+)/(?:files/)?(.+?/)?(.+?)-([\\d]+(?:.\\d+)*\\w*?).+$")
 
 // Provider is the upstream provider interface for SourceForge
 type Provider struct{}
@@ -100,6 +100,7 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	sm := TarballRegex.FindStringSubmatch(name)
 	if len(sm) != 5 {
 		sm = ProjectRegex.FindStringSubmatch(name)
+        sm[1], sm[3] = sm[3], sm[1]
     }
 	// Query the API
 	resp, err := http.Get(fmt.Sprintf(API, sm[1], sm[2]))
