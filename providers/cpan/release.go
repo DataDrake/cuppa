@@ -35,10 +35,7 @@ func (cr *Release) Convert(name string) *results.Result {
 	if cr.Status != "latest" {
 		return nil
 	}
-	r := &results.Result{}
-	r.Name = name
-	r.Version = cr.Version
-	r.Published, _ = time.Parse(time.RFC3339, cr.Date)
-	r.Location = cr.Location
+    t, _ := time.Parse(time.RFC3339, cr.Date)
+	r := results.NewResult(name, cr.Version, cr.Location, t)
 	return r
 }

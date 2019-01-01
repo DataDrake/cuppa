@@ -91,12 +91,7 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 		if len(sm) == 0 {
 			continue
 		}
-		r := &results.Result{
-			Name:      sm[1],
-			Version:   sm[2],
-			Location:  fmt.Sprintf(GNUFormat, name, entry.Name),
-			Published: entry.Time,
-		}
+		r := results.NewResult(sm[1], sm[2], fmt.Sprintf(GNUFormat, name, entry.Name), entry.Time )
 		rs.AddResult(r)
 		s = results.OK
 	}

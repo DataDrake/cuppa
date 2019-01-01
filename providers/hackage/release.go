@@ -36,10 +36,6 @@ type Release struct {
 
 // Convert turns a Hackage release into a Cuppa result
 func (hr *Release) Convert() *results.Result {
-	r := &results.Result{}
-	r.Name = hr.name
-	r.Version = hr.version
-	r.Published, _ = time.Parse(time.UnixDate, hr.released)
-	r.Location = fmt.Sprintf(TarballAPI, hr.name, hr.version, hr.name, hr.version)
-	return r
+    pub, _ := time.Parse(time.UnixDate, hr.released)
+	return results.NewResult(hr.name, hr.version, fmt.Sprintf(TarballAPI, hr.name, hr.version, hr.name, hr.version), pub)
 }

@@ -19,7 +19,6 @@ package results
 import (
 	"fmt"
 	"sort"
-	"strings"
 )
 
 // ResultSet is a collection of the Results of a Provider query
@@ -84,7 +83,7 @@ func (rs *ResultSet) Len() int {
 // Less reports whether the element with
 // index i should sort before the element with index j. (sort.Interface)
 func (rs *ResultSet) Less(i, j int) bool {
-	return strings.Compare(rs.results[i].Version, rs.results[j].Version) == -1
+	return !rs.results[i].Version.Less(rs.results[j].Version)
 }
 
 // Swap swaps the elements with indexes i and j.

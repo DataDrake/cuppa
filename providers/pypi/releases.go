@@ -23,13 +23,9 @@ import (
 
 // ConvertURLS translates PyPi URLs to Cuppa results
 func ConvertURLS(cr []URL, name, version string) *results.Result {
-	r := &results.Result{}
-	r.Name = name
-	r.Version = version
 	u := cr[len(cr)-1]
-	r.Published, _ = time.Parse(DateFormat, u.UploadTime)
-	r.Location = u.URL
-	return r
+	published, _ := time.Parse(DateFormat, u.UploadTime)
+	return results.NewResult(name, version, u.URL, published)
 }
 
 // Releases holds one or more Source URLs

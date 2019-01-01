@@ -25,6 +25,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+    "time"
 )
 
 const (
@@ -128,20 +129,18 @@ func Merge(name string, srcs, vs map[string]interface{}) (rs *results.ResultSet)
 		if len(files) == 0 {
 			continue
 		}
-		r := &results.Result{
-			Name:    name,
-			Version: v.(string),
-		}
+        var location string
 		switch {
 		case files["tar.xz"] != nil:
-			r.Location = fmt.Sprintf(SourceFormat, name, files["tar.xz"].(string))
+			location = fmt.Sprintf(SourceFormat, name, files["tar.xz"].(string))
 		case files["tar.gz"] != nil:
-			r.Location = fmt.Sprintf(SourceFormat, name, files["tar.gz"].(string))
+			location = fmt.Sprintf(SourceFormat, name, files["tar.gz"].(string))
 		case files["tar.bz2"] != nil:
-			r.Location = fmt.Sprintf(SourceFormat, name, files["tar.bz2"].(string))
+			location = fmt.Sprintf(SourceFormat, name, files["tar.bz2"].(string))
 		default:
 			continue
 		}
+		r := results.NewResult(name, v.(string), location, time.Time{})
 		rs.AddResult(r)
 	}
 	return

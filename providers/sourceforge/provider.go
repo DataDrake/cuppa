@@ -32,7 +32,7 @@ const (
 )
 
 // TarballRegex matches SourceForge sources
-var TarballRegex = regexp.MustCompile("https?://.*sourceforge.net/projects/(.+)/files/(.+)/(.+?)-([\\d]+(?:.\\d+)*\\w*?).+$")
+var TarballRegex = regexp.MustCompile("https?://.*sourceforge.net/projects/(.+)/files/(.+)/(.+?)-([\\d]+(?:.\\d+)*\\w*?)\\.(?:zip|.+z)$")
 
 // ProjectRegex matches SourceForge sources
 var ProjectRegex = regexp.MustCompile("https?://.*sourceforge.net/project/(.+?)/(.+)/(?:.+?/)?(.+?)-([\\d]+(?:.\\d+)*\\w*?).+$")
@@ -62,12 +62,7 @@ func (f *Feed) toResults(name string) *results.ResultSet {
 			continue
 		}
 		pub, _ := time.Parse(time.RFC1123, item.Date+"C")
-		r := &results.Result{
-			Name:      name,
-			Version:   sm[4],
-			Location:  item.Link,
-			Published: pub,
-		}
+		r := results.NewResult(name, sm[4], item.Link, pub)
 		rs.AddResult(r)
 	}
 	return rs

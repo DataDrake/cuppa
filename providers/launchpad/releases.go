@@ -32,12 +32,9 @@ type Release struct {
 
 // Convert turns a Launchpad release into a Cuppa result
 func (lr *Release) Convert() *results.Result {
-	r := &results.Result{}
-	r.Name = lr.name
-	r.Version = lr.release
-	r.Published, _ = time.Parse(time.RFC3339, lr.uploaded)
-	r.Location = fmt.Sprintf(SourceFormat, lr.name, lr.series, lr.release, lr.name, lr.release)
-	return r
+	published, _ := time.Parse(time.RFC3339, lr.uploaded)
+	location := fmt.Sprintf(SourceFormat, lr.name, lr.series, lr.release, lr.name, lr.release)
+    return results.NewResult(lr.name, lr.release, location, published)
 }
 
 // Releases holds one or more Launchpad Releases

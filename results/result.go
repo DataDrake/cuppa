@@ -18,26 +18,28 @@ package results
 
 import (
 	"fmt"
+	"github.com/DataDrake/cuppa/version"
+    "strings"
 	"time"
 )
 
 // Result contains the information for a single query result
 type Result struct {
 	Name      string
-	Version   string
+	Version   version.Version
 	Location  string
 	Published time.Time
 }
 
 // NewResult creates a result with the specified values
-func NewResult(name, version string, location string, published time.Time) *Result {
-	return &Result{name, version, location, published}
+func NewResult(name, v string, location string, published time.Time) *Result {
+	return &Result{name, version.NewVersion(v), location, published}
 }
 
 // Print pretty-prints a single Result
 func (r *Result) Print() {
 	fmt.Printf("%-10s: %s\n", "Name", r.Name)
-	fmt.Printf("%-10s: %s\n", "Version", r.Version)
+	fmt.Printf("%-10s: %s\n", "Version", strings.Join(r.Version, "."))
 	if r.Location != "" {
 		fmt.Printf("%-10s: %s\n", "Location", r.Location)
 	}

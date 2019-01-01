@@ -40,11 +40,7 @@ type LatestSource struct {
 
 // Convert turns a PyPi latest into a Cuppa Result
 func (cr *LatestSource) Convert(name string) *results.Result {
-	r := &results.Result{}
-	r.Name = name
-	r.Version = cr.Info.Version
 	u := cr.URLs[len(cr.URLs)-1]
-	r.Published, _ = time.Parse(DateFormat, u.UploadTime)
-	r.Location = u.URL
-	return r
+	published, _ := time.Parse(DateFormat, u.UploadTime)
+	return results.NewResult(name, cr.Info.Version, u.URL, published)
 }

@@ -91,23 +91,14 @@ func (rqr RepoQueryResult) Convert(name string) (rs *results.ResultSet) {
 				continue
 			}
 			published, _ := time.Parse(time.RFC3339, node.PublishedAt)
-			r := &results.Result{
-				Name:      node.Name,
-				Version:   node.Tag.Name,
-				Location:  fmt.Sprintf(SourceFormat, name, node.Tag.Name),
-				Published: published,
-			}
+			r := results.NewResult(node.Name, node.Tag.Name, fmt.Sprintf(SourceFormat, name, node.Tag.Name), published )
 			rs.AddResult(r)
 		}
 	}
 	if rs.Len() == 0 {
 		nodes := rqr.Data.Repository.Refs.Nodes
 		for _, node := range nodes {
-			r := &results.Result{
-				Name:     name,
-				Version:  node.Name,
-				Location: fmt.Sprintf(SourceFormat, name, node.Name),
-			}
+			r := results.NewResult(name, node.Name, fmt.Sprintf(SourceFormat, name, node.Name), time.Time{})
 			rs.AddResult(r)
 		}
 	}

@@ -41,16 +41,12 @@ type Release struct {
 
 // Convert turns a JetBrains release into a Cuppa result
 func (jb Release) Convert() *results.Result {
-	r := &results.Result{}
-	r.Version = jb.Version
-	r.Published, _ = time.Parse("2006-01-02", jb.Date)
+	published, _ := time.Parse("2006-01-02", jb.Date)
 	if d, ok := jb.Downloads["linuxWithoutJDK"]; ok {
-		r.Location = d.Link
-		return r
+		return results.NewResult("", jb.Version, d.Link, published)
 	}
 	if d, ok := jb.Downloads["linux"]; ok {
-		r.Location = d.Link
-		return r
+		return results.NewResult("", jb.Version, d.Link, published)
 	}
-	return r
+	return nil
 }

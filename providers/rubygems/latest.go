@@ -19,6 +19,7 @@ package rubygems
 import (
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
+    "time"
 )
 
 // LatestVersion is a JSON representation of the latest Version of a Gem
@@ -28,9 +29,5 @@ type LatestVersion struct {
 
 // Convert turns a Rubygems latest release into a Cuppa result
 func (cr *LatestVersion) Convert(name string) *results.Result {
-	r := &results.Result{}
-	r.Name = name
-	r.Version = cr.Version
-	r.Location = fmt.Sprintf(SourceFormat, name, cr.Version)
-	return r
+	return results.NewResult(name, cr.Version, fmt.Sprintf(SourceFormat, name, cr.Version), time.Time{})
 }

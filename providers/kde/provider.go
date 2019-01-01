@@ -141,12 +141,7 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 			case 6:
 				location = fmt.Sprintf(SourceFormat6, pieces[0], pieces[1], version, pieces[3], pieces[4], name, version)
 			}
-			r := &results.Result{
-				Name:      name,
-				Version:   version,
-				Location:  location,
-				Published: updated,
-			}
+			r := results.NewResult(name, version, location, updated)
 			rs.AddResult(r)
 		}
 		break
