@@ -142,6 +142,9 @@ func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 		return
 	}
 	r = rs.Convert(name)
+	if r == nil {
+		s = results.NotFound
+	}
 	return
 }
 

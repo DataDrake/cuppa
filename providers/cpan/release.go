@@ -37,5 +37,8 @@ func (cr *Release) Convert(name string) *results.Result {
 	}
 	t, _ := time.Parse(time.RFC3339, cr.Date)
 	r := results.NewResult(name, cr.Version, cr.Location, t)
+	if r.Version[0] == "N/A" {
+		return nil
+	}
 	return r
 }

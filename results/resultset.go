@@ -36,6 +36,9 @@ var skipWords = []string{"rc", "RC", "beta", "Beta", "BETA", "dev", "DEV", "unst
 
 // AddResult appends a new Result
 func (rs *ResultSet) AddResult(r *Result) {
+	if r == nil {
+		return
+	}
 	if r.Version[0] == "N/A" {
 		return
 	}
