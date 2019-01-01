@@ -19,7 +19,7 @@ package rubygems
 import (
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
-    "time"
+	"time"
 )
 
 // LatestVersion is a JSON representation of the latest Version of a Gem

@@ -34,7 +34,7 @@ type Release struct {
 func (lr *Release) Convert() *results.Result {
 	published, _ := time.Parse(time.RFC3339, lr.uploaded)
 	location := fmt.Sprintf(SourceFormat, lr.name, lr.series, lr.release, lr.name, lr.release)
-    return results.NewResult(lr.name, lr.release, location, published)
+	return results.NewResult(lr.name, lr.release, location, published)
 }
 
 // Releases holds one or more Launchpad Releases

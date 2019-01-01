@@ -96,7 +96,7 @@ func (c Config) Parse(name, path string, in io.Reader) (rs *results.ResultSet, e
 			if e != nil {
 				continue
 			}
-			r := results.NewResult(n, version, path + loc, mod)
+			r := results.NewResult(n, version, path+loc, mod)
 			rs.AddResult(r)
 		}
 	}

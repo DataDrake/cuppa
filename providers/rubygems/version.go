@@ -34,7 +34,7 @@ func (cr *Version) Convert(name string) *results.Result {
 	if cr.PreRelease {
 		return nil
 	}
-    published, _ := time.Parse(time.RFC3339, cr.CreatedAt)
+	published, _ := time.Parse(time.RFC3339, cr.CreatedAt)
 	location := fmt.Sprintf(SourceFormat, name, cr.Number)
 	return results.NewResult(name, cr.Number, location, published)
 }

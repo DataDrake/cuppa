@@ -19,7 +19,7 @@ package results
 import (
 	"fmt"
 	"github.com/DataDrake/cuppa/version"
-    "strings"
+	"strings"
 	"time"
 )
 

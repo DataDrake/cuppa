@@ -37,7 +37,7 @@ type Provider struct{}
 
 // Latest finds the newest release for a github package
 func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
-	rs, s := c.GetReleases(name, 1)
+	rs, s := c.GetReleases(name, 100)
 	if s != results.OK {
 		return
 	}

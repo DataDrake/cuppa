@@ -91,7 +91,7 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 		if len(sm) == 0 {
 			continue
 		}
-		r := results.NewResult(sm[1], sm[2], fmt.Sprintf(GNUFormat, name, entry.Name), entry.Time )
+		r := results.NewResult(sm[1], sm[2], fmt.Sprintf(GNUFormat, name, entry.Name), entry.Time)
 		rs.AddResult(r)
 		s = results.OK
 	}

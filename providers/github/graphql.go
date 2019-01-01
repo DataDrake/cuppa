@@ -91,7 +91,7 @@ func (rqr RepoQueryResult) Convert(name string) (rs *results.ResultSet) {
 				continue
 			}
 			published, _ := time.Parse(time.RFC3339, node.PublishedAt)
-			r := results.NewResult(node.Name, node.Tag.Name, fmt.Sprintf(SourceFormat, name, node.Tag.Name), published )
+			r := results.NewResult(node.Name, node.Tag.Name, fmt.Sprintf(SourceFormat, name, node.Tag.Name), published)
 			rs.AddResult(r)
 		}
 	}

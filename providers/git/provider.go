@@ -23,7 +23,7 @@ import (
 	"io"
 	"os/exec"
 	"strings"
-    "time"
+	"time"
 )
 
 // Provider provides a common interface for each of the backend providers
@@ -52,7 +52,7 @@ func (p Provider) Latest(name string) (*results.Result, results.Status) {
 			tag = pieces[len(pieces)-1]
 		}
 		if !strings.HasSuffix(tag, "{}") {
-			r = results.NewResult( repoName, tag, "git|" + name, time.Time{})
+			r = results.NewResult(repoName, tag, "git|"+name, time.Time{})
 		}
 		line, _, err = read.ReadLine()
 	}
@@ -93,7 +93,7 @@ func (p Provider) Releases(name string) (*results.ResultSet, results.Status) {
 			tag = pieces[len(pieces)-1]
 		}
 		if !strings.HasSuffix(tag, "{}") {
-			r = results.NewResult(repoName, tag, "git|" + name, time.Time{} )
+			r = results.NewResult(repoName, tag, "git|"+name, time.Time{})
 			rs.AddResult(r)
 		}
 		line, _, err = read.ReadLine()
