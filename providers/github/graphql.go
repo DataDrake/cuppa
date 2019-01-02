@@ -85,22 +85,22 @@ type RepoQueryResult struct {
 // Convert turns a RepoQueryResult into a Cuppa ResultSet
 func (rqr RepoQueryResult) Convert(name string) (rs *results.ResultSet) {
 	rs = results.NewResultSet(name)
-	if nodes := rqr.Data.Repository.Releases.Nodes; len(nodes) > 0 {
-		for _, node := range nodes {
-			if node.IsPrerelease {
-				continue
-			}
-			published, _ := time.Parse(time.RFC3339, node.PublishedAt)
-			r := results.NewResult(node.Name, node.Tag.Name, fmt.Sprintf(SourceFormat, name, node.Tag.Name), published)
-			rs.AddResult(r)
+	for _, tag := range rqr.Data.Repository.Refs.Nodes {
+        pre   := false
+        var published time.Time
+		for _, node := range rqr.Data.Repository.Releases.Nodes {
+            if node.Tag.Name == tag.Name {
+			    if node.IsPrerelease {
+				    pre = true
+			    }
+    			published, _ = time.Parse(time.RFC3339, node.PublishedAt)
+            }
 		}
-	}
-	if rs.Len() == 0 {
-		nodes := rqr.Data.Repository.Refs.Nodes
-		for _, node := range nodes {
-			r := results.NewResult(name, node.Name, fmt.Sprintf(SourceFormat, name, node.Name), time.Time{})
-			rs.AddResult(r)
-		}
+        if pre {
+            continue
+        }
+        r := results.NewResult(name, tag.Name, fmt.Sprintf(SourceFormat, name, tag.Name), published)
+	    rs.AddResult(r)
 	}
 	return
 }
