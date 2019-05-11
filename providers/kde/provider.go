@@ -101,7 +101,8 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	}
 	buff := bytes.NewBuffer(listing)
 	pieces := strings.Split(name, "/")
-	name = strings.Split(pieces[len(pieces)-1], "-")[0]
+	pieces2 := strings.Split(pieces[len(pieces)-1], "-")
+    name = strings.Join(pieces2[0:len(pieces2)-1], "-")
 	var searchPrefix string
 	switch len(pieces) {
 	case 4:
