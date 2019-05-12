@@ -86,21 +86,21 @@ type RepoQueryResult struct {
 func (rqr RepoQueryResult) Convert(name string) (rs *results.ResultSet) {
 	rs = results.NewResultSet(name)
 	for _, tag := range rqr.Data.Repository.Refs.Nodes {
-        pre   := false
-        var published time.Time
+		pre := false
+		var published time.Time
 		for _, node := range rqr.Data.Repository.Releases.Nodes {
-            if node.Tag.Name == tag.Name {
-			    if node.IsPrerelease {
-				    pre = true
-			    }
-    			published, _ = time.Parse(time.RFC3339, node.PublishedAt)
-            }
+			if node.Tag.Name == tag.Name {
+				if node.IsPrerelease {
+					pre = true
+				}
+				published, _ = time.Parse(time.RFC3339, node.PublishedAt)
+			}
 		}
-        if pre {
-            continue
-        }
-        r := results.NewResult(name, tag.Name, fmt.Sprintf(SourceFormat, name, tag.Name), published)
-	    rs.AddResult(r)
+		if pre {
+			continue
+		}
+		r := results.NewResult(name, tag.Name, fmt.Sprintf(SourceFormat, name, tag.Name), published)
+		rs.AddResult(r)
 	}
 	return
 }
