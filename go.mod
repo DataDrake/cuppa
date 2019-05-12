@@ -3,7 +3,7 @@ module github.com/DataDrake/cuppa
 require (
 	github.com/BurntSushi/toml v0.3.0
 	github.com/DataDrake/cli-ng v1.0.1
-	github.com/DataDrake/waterlog v1.0.1
+	github.com/DataDrake/waterlog v1.0.5
 	github.com/Masterminds/semver v1.4.2 // indirect
 	github.com/Masterminds/vcs v1.12.0 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
