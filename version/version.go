@@ -166,7 +166,12 @@ func (v Version) FindDate() time.Time {
     if year > thisYear || year < (thisYear-20) {
         return time.Time{}
     }
-    month, _ := strconv.Atoi(v[1])
-    day, _ := strconv.Atoi(v[2])
+    var month, day int
+    if len(v) > 1 {
+        month, _ = strconv.Atoi(v[1])
+    }
+    if len(v) > 2 {
+        day, _ = strconv.Atoi(v[2])
+    }
     return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 }
