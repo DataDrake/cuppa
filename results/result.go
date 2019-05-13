@@ -33,7 +33,11 @@ type Result struct {
 
 // NewResult creates a result with the specified values
 func NewResult(name, v string, location string, published time.Time) *Result {
-	return &Result{name, version.NewVersion(v), location, published}
+	r := &Result{name, version.NewVersion(v), location, published}
+    if r.Published.IsZero() {
+        r.Published = r.Version.FindDate()
+    }
+    return r
 }
 
 // Print pretty-prints a single Result

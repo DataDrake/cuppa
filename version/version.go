@@ -19,6 +19,7 @@ package version
 import (
 	"strconv"
 	"strings"
+    "time"
 	"unicode"
 )
 
@@ -148,4 +149,24 @@ func (v Version) Compare(old Version) int {
 // Less checks if this version is less than another
 func (v Version) Less(other Version) bool {
 	return v.Compare(other) < 0
+}
+
+const dateLayout = "20060102"
+
+func (v Version) FindDate() time.Time {
+    t, err := time.Parse(dateLayout, v[0])
+    if err == nil {
+        return t
+    }
+    thisYear, _, _ := time.Now().Date()
+    year, err := strconv.Atoi(v[0])
+    if err != nil {
+        return time.Time{}
+    }
+    if year > thisYear || year < (thisYear-20) {
+        return time.Time{}
+    }
+    month, _ := strconv.Atoi(v[1])
+    day, _ := strconv.Atoi(v[2])
+    return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 }
