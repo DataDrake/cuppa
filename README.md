@@ -19,6 +19,7 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 ### Supported Providers
 * CPAN
 * Github (with API Key support)
+* GitLab
 * GNOME
 * Hackage
 * Jetbrains
@@ -32,7 +33,6 @@ As a package maintainer, it's a challenging task to keep track of every new rele
 * BitBucket
 * FTP
 * Git
-* GitLab
 
 ### Stretch Goal Providers
 * RSS
@@ -90,6 +90,7 @@ where CMD is the action to perform and URL is the link to an existing source.
 | --------- | --- |
 | CPAN      | https://cpan.metacpan.org/authors/id/T/TO/TODDR/IO-1.39.tar.gz |
 | Github    | https://github.com/DataDrake/cuppa/archive/v1.0.4.tar.gz |
+| GitLab    | https://gitlab.com/corectrl/corectrl/-/archive/v1.0.6/corectrl-v1.0.6.tar.gz |
 | GNOME     | https://download.gnome.org/sources/gnome-music/3.28/gnome-music-3.28.2.tar.xz |
 | Hackage   | https://hackage.haskell.org/package/mtl-2.2.2/mtl-2.2.2.tar.gz |
 | JetBrains | https://download.jetbrains.com/ruby/RubyMine-2017.3.3.tar.gz |
