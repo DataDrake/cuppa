@@ -23,7 +23,6 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/DataDrake/cuppa/results"
 )
@@ -69,7 +68,7 @@ func (c Provider) Name() string {
 	return "GitLab"
 }
 
-// Releases finds all matching releases for a github package
+// Releases finds all matching releases for a GitLab package
 func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
 	// Query the API
 	encoded := strings.Replace(name, "/", "%2f", 1)
@@ -97,32 +96,15 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	}
 
 	dec := json.NewDecoder(resp.Body)
-	raw := make([]interface{}, 0)
-	err = dec.Decode(&raw)
+	keys := make([]Tag, 0)
+	err = dec.Decode(&keys)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		s = results.Unavailable
 		return
 	}
 
-	if len(raw) < 1 {
-		s = results.Unavailable
-		return
-	}
-
-	rs = results.NewResultSet(name)
-	for _, v := range raw {
-		tag := v.(map[string]interface{})["name"]
-		file := fmt.Sprintf("%s-%s", strings.Split(name, "/")[1], tag)
-		loc := fmt.Sprintf(SourceFormat, name, tag, file)
-
-		commit := v.(map[string]interface{})["commit"].(map[string]interface{})
-		date := commit["authored_date"]
-		published, _ := time.Parse(time.RFC3339, date.(string))
-
-		r := results.NewResult(name, tag.(string), loc, published)
-		rs.AddResult(r)
-	}
-
+	tags := &Tags{keys}
+	rs = tags.Convert(name)
 	return
 }
