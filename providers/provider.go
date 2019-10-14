@@ -20,6 +20,7 @@ import (
 	"github.com/DataDrake/cuppa/providers/cpan"
 	"github.com/DataDrake/cuppa/providers/git"
 	"github.com/DataDrake/cuppa/providers/github"
+	"github.com/DataDrake/cuppa/providers/gitlab"
 	"github.com/DataDrake/cuppa/providers/gnome"
 	"github.com/DataDrake/cuppa/providers/gnu"
 	"github.com/DataDrake/cuppa/providers/hackage"
@@ -57,5 +58,6 @@ func All() []Provider {
 		rubygems.Provider{},
 		sourceforge.Provider{},
 		git.Provider{},
+		gitlab.Provider{},
 	}
 }
