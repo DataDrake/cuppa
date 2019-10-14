@@ -19,7 +19,7 @@ package version
 import (
 	"strconv"
 	"strings"
-    "time"
+	"time"
 	"unicode"
 )
 
@@ -153,25 +153,26 @@ func (v Version) Less(other Version) bool {
 
 const dateLayout = "20060102"
 
+// FindDate tries to parse a version into a date if possible
 func (v Version) FindDate() time.Time {
-    t, err := time.Parse(dateLayout, v[0])
-    if err == nil {
-        return t
-    }
-    thisYear, _, _ := time.Now().Date()
-    year, err := strconv.Atoi(v[0])
-    if err != nil {
-        return time.Time{}
-    }
-    if year > thisYear || year < (thisYear-20) {
-        return time.Time{}
-    }
-    var month, day int
-    if len(v) > 1 {
-        month, _ = strconv.Atoi(v[1])
-    }
-    if len(v) > 2 {
-        day, _ = strconv.Atoi(v[2])
-    }
-    return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
+	t, err := time.Parse(dateLayout, v[0])
+	if err == nil {
+		return t
+	}
+	thisYear, _, _ := time.Now().Date()
+	year, err := strconv.Atoi(v[0])
+	if err != nil {
+		return time.Time{}
+	}
+	if year > thisYear || year < (thisYear-20) {
+		return time.Time{}
+	}
+	var month, day int
+	if len(v) > 1 {
+		month, _ = strconv.Atoi(v[1])
+	}
+	if len(v) > 2 {
+		day, _ = strconv.Atoi(v[2])
+	}
+	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 }

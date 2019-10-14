@@ -78,7 +78,7 @@ func (rs *ResultSet) Last() *Result {
 	case 1:
 		return rs.results[0]
 	default:
-        sort.Sort(rs)
+		sort.Sort(rs)
 		return rs.results[len(rs.results)-1]
 	}
 }
@@ -107,10 +107,10 @@ func (rs *ResultSet) Len() int {
 // Less reports whether the element with
 // index i should sort before the element with index j. (sort.Interface)
 func (rs *ResultSet) Less(i, j int) bool {
-    if !rs.results[i].Published.IsZero() && !rs.results[j].Published.IsZero() {
-	    return rs.results[i].Published.Before(rs.results[j].Published)
-    }
-    return !rs.results[i].Version.Less(rs.results[j].Version)
+	if !rs.results[i].Published.IsZero() && !rs.results[j].Published.IsZero() {
+		return rs.results[i].Published.Before(rs.results[j].Published)
+	}
+	return !rs.results[i].Version.Less(rs.results[j].Version)
 }
 
 // Swap swaps the elements with indexes i and j.
