@@ -29,14 +29,20 @@ import (
 
 const (
 	// SourceFormat is the format string for GitLab release tarballs
-	SourceFormat = "https://gitlab.com/%s/-/archive/%s/%s.tar.gz"
+	SourceFormat = "https://gitlab.com/%s/-/archive/%s/%s.tar.bz2"
 
-	// TagsEndpoint is the API endpoint URL for GitLab project tags
-	TagsEndpoint = "https://gitlab.com/api/v4/projects/%s/repository/tags"
+	// SourceFormatFreedesktop is the format string for release tarballs from Freedesktop's GitLab
+	SourceFormatFreedesktop = "https://gitlab.freedesktop.org/%s/-/archive/%s/%s.tar.bz2"
+
+	// GitlabEndpoint is the API endpoint URL for GitLab project tags
+	GitlabEndpoint = "https://gitlab.com/api/v4/projects/%s/repository/tags"
+
+	// FreedesktopEndpoint is the API endpoint URL for Freedesktop project tags
+	FreedesktopEndpoint = "https://gitlab.freedesktop.org/api/v4/projects/%s/repository/tags"
 )
 
-// SourceRegex is the regex for GitLab sources
-var SourceRegex = regexp.MustCompile("gitlab.com/([^/]+/[^/.]+)")
+// SourceRegex is the regex for GitLab sources. It also matches Freedesktop's GitLab format
+var SourceRegex = regexp.MustCompile("https?://.*(?:gitlab.com|gitlab.freedesktop.org)/([^/]+/[^/.]+)")
 
 // VersionRegex is used to parse GitLab version numbers
 var VersionRegex = regexp.MustCompile("(?:\\d+\\.)*\\d+\\w*")
@@ -60,7 +66,8 @@ func (c Provider) Match(query string) string {
 	if len(sm) != 2 {
 		return ""
 	}
-	return sm[1]
+
+	return strings.TrimPrefix(sm[0], "https://")
 }
 
 // Name gives the name of this provider
@@ -70,9 +77,22 @@ func (c Provider) Name() string {
 
 // Releases finds all matching releases for a GitLab package
 func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
+	// Figure out which endpoint we need to hit
+	parts := strings.SplitN(name, "/", 2)
+	hostname := parts[0]
+	project := parts[1]
+	encoded := strings.Replace(project, "/", "%2f", 1)
+	isFreedesktop := strings.HasSuffix(hostname, "freedesktop.org")
+
+	var endpoint string
+	if isFreedesktop {
+		endpoint = fmt.Sprintf(FreedesktopEndpoint, encoded)
+	} else {
+		endpoint = fmt.Sprintf(GitlabEndpoint, encoded)
+	}
+
 	// Query the API
-	encoded := strings.Replace(name, "/", "%2f", 1)
-	resp, err := http.Get(fmt.Sprintf(TagsEndpoint, encoded))
+	resp, err := http.Get(endpoint)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		s = results.Unavailable
@@ -105,6 +125,6 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	}
 
 	tags := &Tags{keys}
-	rs = tags.Convert(name)
+	rs = tags.Convert(project, isFreedesktop)
 	return
 }

@@ -18,9 +18,10 @@ package results
 
 import (
 	"fmt"
-	"github.com/DataDrake/cuppa/version"
 	"strings"
 	"time"
+
+	"github.com/DataDrake/cuppa/version"
 )
 
 // Result contains the information for a single query result

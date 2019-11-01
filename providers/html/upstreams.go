@@ -22,11 +22,6 @@ import (
 
 var upstreams = []Upstream{
 	{
-		Name:        "freedesktop",
-		HostPattern: regexp.MustCompile("^(https?://.*freedesktop.org/.+\\/)([^\\/]+)-.+?$"),
-		Conf:        HTTPDConfig,
-	},
-	{
 		Name:        "xorg",
 		HostPattern: regexp.MustCompile("^(https?://.*x.org/.+\\/)([^\\/]+)-.+?$"),
 		Conf:        HTTPDConfig,

@@ -31,8 +31,7 @@ type Commit struct {
 
 // Release is a JSON representation of a GitLab tag release
 type Release struct {
-	TagName     string `json:"tag_name"`
-	Description string `json:"description"`
+	TagName string `json:"tag_name"`
 }
 
 // Tag is a JSON representation of a GitLab tag
@@ -43,10 +42,25 @@ type Tag struct {
 }
 
 // Convert turns a GitLab tag into a Cuppa result
-func (gl Tag) Convert(name string) *results.Result {
+func (gl Tag) Convert(name string, isFreedesktop bool) *results.Result {
 	published, _ := time.Parse(time.RFC3339, gl.Commit.AuthoredDate)
 	file := fmt.Sprintf("%s-%s", strings.Split(name, "/")[1], gl.Name)
-	loc := fmt.Sprintf(SourceFormat, name, gl.Name, file)
 
-	return results.NewResult(name, gl.Release.TagName, loc, published)
+	// For some projects, GitLab does not return a release object in the
+	// JSON response.
+	var version string
+	if gl.Release.TagName != "" {
+		version = gl.Release.TagName
+	} else {
+		version = gl.Name
+	}
+
+	var loc string
+	if isFreedesktop {
+		loc = fmt.Sprintf(SourceFormatFreedesktop, name, gl.Name, file)
+	} else {
+		loc = fmt.Sprintf(SourceFormat, name, gl.Name, file)
+	}
+
+	return results.NewResult(name, version, loc, published)
 }
