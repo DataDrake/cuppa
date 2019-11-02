@@ -50,7 +50,6 @@ func All() []Provider {
 		gnome.Provider{},
 		gnu.Provider{},
 		hackage.Provider{},
-		html.Provider{},
 		jetbrains.Provider{},
 		kde.Provider{},
 		launchpad.Provider{},
@@ -59,5 +58,6 @@ func All() []Provider {
 		sourceforge.Provider{},
 		git.Provider{},
 		gitlab.Provider{},
+		html.Provider{},
 	}
 }

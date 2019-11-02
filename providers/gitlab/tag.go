@@ -31,8 +31,7 @@ type Commit struct {
 
 // Release is a JSON representation of a GitLab tag release
 type Release struct {
-	TagName     string `json:"tag_name"`
-	Description string `json:"description"`
+	TagName string `json:"tag_name"`
 }
 
 // Tag is a JSON representation of a GitLab tag
@@ -43,10 +42,10 @@ type Tag struct {
 }
 
 // Convert turns a GitLab tag into a Cuppa result
-func (gl Tag) Convert(name string) *results.Result {
+func (gl Tag) Convert(host, name string) *results.Result {
 	published, _ := time.Parse(time.RFC3339, gl.Commit.AuthoredDate)
 	file := fmt.Sprintf("%s-%s", strings.Split(name, "/")[1], gl.Name)
-	loc := fmt.Sprintf(SourceFormat, name, gl.Name, file)
+	loc := fmt.Sprintf(SourceFormat, host, name, gl.Name, file)
 
 	return results.NewResult(name, gl.Release.TagName, loc, published)
 }

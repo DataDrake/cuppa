@@ -24,10 +24,10 @@ type Tags struct {
 }
 
 // Convert turns a GitLab result set into a Cuppa ResultSet
-func (gls Tags) Convert(name string) *results.ResultSet {
+func (gls Tags) Convert(host, name string) *results.ResultSet {
 	rs := results.NewResultSet(name)
 	for _, rel := range gls.Tags {
-		r := rel.Convert(name)
+		r := rel.Convert(host, name)
 		if r != nil {
 			rs.AddResult(r)
 		}

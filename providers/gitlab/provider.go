@@ -19,24 +19,23 @@ package gitlab
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/DataDrake/cuppa/results"
 	"net/http"
 	"os"
 	"regexp"
-	"strings"
-
-	"github.com/DataDrake/cuppa/results"
+    "strings"
 )
 
 const (
 	// SourceFormat is the format string for GitLab release tarballs
-	SourceFormat = "https://gitlab.com/%s/-/archive/%s/%s.tar.gz"
+	SourceFormat = "https://%s/%s/-/archive/%s/%s.tar.gz"
 
 	// TagsEndpoint is the API endpoint URL for GitLab project tags
-	TagsEndpoint = "https://gitlab.com/api/v4/projects/%s/repository/tags"
+	TagsEndpoint = "https://%s/api/v4/projects/%s%%2f%s/repository/tags"
 )
 
 // SourceRegex is the regex for GitLab sources
-var SourceRegex = regexp.MustCompile("gitlab.com/([^/]+/[^/.]+)")
+var SourceRegex = regexp.MustCompile("https?://(gitlab[^/]+)/([^/]+/[^/.]+)")
 
 // VersionRegex is used to parse GitLab version numbers
 var VersionRegex = regexp.MustCompile("(?:\\d+\\.)*\\d+\\w*")
@@ -57,10 +56,10 @@ func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 // Match checks to see if this provider can handle this kind of query
 func (c Provider) Match(query string) string {
 	sm := SourceRegex.FindStringSubmatch(query)
-	if len(sm) != 2 {
+	if len(sm) != 3 {
 		return ""
 	}
-	return sm[1]
+	return sm[0]
 }
 
 // Name gives the name of this provider
@@ -71,8 +70,9 @@ func (c Provider) Name() string {
 // Releases finds all matching releases for a GitLab package
 func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
 	// Query the API
-	encoded := strings.Replace(name, "/", "%2f", 1)
-	resp, err := http.Get(fmt.Sprintf(TagsEndpoint, encoded))
+	sm := SourceRegex.FindStringSubmatch(name)
+    pieces := strings.Split(sm[2],"/")
+	resp, err := http.Get(fmt.Sprintf(TagsEndpoint, sm[1], pieces[0],pieces[1]))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		s = results.Unavailable
@@ -89,12 +89,10 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	default:
 		s = results.Unavailable
 	}
-
 	// Fail if not OK
 	if s != results.OK {
 		return
 	}
-
 	dec := json.NewDecoder(resp.Body)
 	keys := make([]Tag, 0)
 	err = dec.Decode(&keys)
@@ -103,8 +101,7 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 		s = results.Unavailable
 		return
 	}
-
 	tags := &Tags{keys}
-	rs = tags.Convert(name)
+	rs = tags.Convert(sm[1], sm[2])
 	return
 }
