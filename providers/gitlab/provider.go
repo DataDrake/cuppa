@@ -23,7 +23,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
-    "strings"
+	"strings"
 )
 
 const (
@@ -31,11 +31,11 @@ const (
 	SourceFormat = "https://%s/%s/-/archive/%s/%s.tar.gz"
 
 	// TagsEndpoint is the API endpoint URL for GitLab project tags
-	TagsEndpoint = "https://%s/api/v4/projects/%s%%2f%s/repository/tags"
+	TagsEndpoint = "https://%s/api/v4/projects/%s/repository/tags"
 )
 
 // SourceRegex is the regex for GitLab sources
-var SourceRegex = regexp.MustCompile("https?://(gitlab[^/]+)/([^/]+/[^/.]+)")
+var SourceRegex = regexp.MustCompile("https?://(gitlab[^/]+)/(.+/[^/.]+)/\\-/")
 
 // VersionRegex is used to parse GitLab version numbers
 var VersionRegex = regexp.MustCompile("(?:\\d+\\.)*\\d+\\w*")
@@ -71,8 +71,8 @@ func (c Provider) Name() string {
 func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
 	// Query the API
 	sm := SourceRegex.FindStringSubmatch(name)
-    pieces := strings.Split(sm[2],"/")
-	resp, err := http.Get(fmt.Sprintf(TagsEndpoint, sm[1], pieces[0],pieces[1]))
+	id := strings.Join(strings.Split(sm[2], "/"), "%2f")
+	resp, err := http.Get(fmt.Sprintf(TagsEndpoint, sm[1], id))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		s = results.Unavailable

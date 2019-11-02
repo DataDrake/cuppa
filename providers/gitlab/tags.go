@@ -16,7 +16,9 @@
 
 package gitlab
 
-import "github.com/DataDrake/cuppa/results"
+import (
+	"github.com/DataDrake/cuppa/results"
+)
 
 // Tags is a set of one or more GitLab tags
 type Tags struct {
@@ -28,10 +30,7 @@ func (gls Tags) Convert(host, name string) *results.ResultSet {
 	rs := results.NewResultSet(name)
 	for _, rel := range gls.Tags {
 		r := rel.Convert(host, name)
-		if r != nil {
-			rs.AddResult(r)
-		}
+		rs.AddResult(r)
 	}
-
 	return rs
 }

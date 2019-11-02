@@ -46,6 +46,10 @@ func (gl Tag) Convert(host, name string) *results.Result {
 	published, _ := time.Parse(time.RFC3339, gl.Commit.AuthoredDate)
 	file := fmt.Sprintf("%s-%s", strings.Split(name, "/")[1], gl.Name)
 	loc := fmt.Sprintf(SourceFormat, host, name, gl.Name, file)
-
-	return results.NewResult(name, gl.Release.TagName, loc, published)
+	version := gl.Release.TagName
+	if len(version) == 0 {
+		vs := strings.Split(gl.Name, "-")
+		version = vs[len(vs)-1]
+	}
+	return results.NewResult(name, version, loc, published)
 }
