@@ -34,6 +34,8 @@ const (
 	ListingURL = "https://download.kde.org/ls-lR.bz2"
 	// ListingPrefix is the prefix of all paths in the KDE listing that is hidden by HTTP
 	ListingPrefix = "/srv/archives/ftp/"
+	// SourceFormat3 is the string format for KDE sources with 3 pieces
+	SourceFormat3 = "https://download.kde.org/%s/%s/%s-%s.tar.xz"
 	// SourceFormat4 is the string format for KDE sources with 4 pieces
 	SourceFormat4 = "https://download.kde.org/%s/%s/%s/%s-%s.tar.xz"
 	// SourceFormat5 is the string format for KDE sources with 5 pieces
@@ -83,7 +85,7 @@ func (c Provider) Match(query string) string {
 		return ""
 	}
 	pieces := strings.Split(sm[1], "/")
-	if len(pieces) < 4 || len(pieces) > 6 {
+	if len(pieces) < 3 || len(pieces) > 6 {
 		return ""
 	}
 	return sm[1]
@@ -105,6 +107,8 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	name = strings.Join(pieces2[0:len(pieces2)-1], "-")
 	var searchPrefix string
 	switch len(pieces) {
+	case 3:
+		searchPrefix = ListingPrefix + strings.Join(pieces[0:len(pieces)-1], "/") + ":\n"
 	case 4:
 		searchPrefix = ListingPrefix + strings.Join(pieces[0:len(pieces)-2], "/") + ":\n"
 	case 5, 6:
@@ -128,13 +132,26 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 				break
 			}
 			fields := strings.Fields(line)
-			version := fields[len(fields)-1]
-			if version[0] > 57 || version[0] < 48 {
+			fd := fields[len(fields)-1]
+			parts := strings.Split(fd, "-")
+			last := parts[len(parts)-1]
+			parts = strings.Split(last, ".")
+			var vRaw []string
+			for _, p := range parts {
+				if p[0] > 57 || p[0] < 48 {
+					break
+				}
+				vRaw = append(vRaw, p)
+			}
+			version := strings.Join(vRaw, ".")
+			if len(version) == 0 || version[0] > 57 || version[0] < 48 {
 				continue
 			}
 			updated, _ := time.Parse("2006-01-02 15:04", strings.Join(fields[len(fields)-3:len(fields)-2], " "))
 			var location string
 			switch len(pieces) {
+			case 3:
+				location = fmt.Sprintf(SourceFormat3, pieces[0], version, name, version)
 			case 4:
 				location = fmt.Sprintf(SourceFormat4, pieces[0], pieces[1], version, name, version)
 			case 5:

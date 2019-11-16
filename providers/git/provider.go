@@ -19,13 +19,13 @@ package git
 import (
 	"bufio"
 	"bytes"
-    "fmt"
+	"fmt"
 	"github.com/DataDrake/cuppa/results"
 	"io"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
-    "os"
 )
 
 // Provider provides a common interface for each of the backend providers
@@ -40,43 +40,43 @@ func (p Provider) Name() string {
 func (p Provider) Latest(name string) (r *results.Result, s results.Status) {
 	pieces := strings.Split(name, "/")
 	repoName := strings.Split(pieces[len(pieces)-1], ".")[0]
-    tmp := fmt.Sprintf("/tmp/%s", repoName)
+	tmp := fmt.Sprintf("/tmp/%s", repoName)
 	cmd := exec.Command("git", "clone", "--depth=1", name)
-    cmd.Dir = "/tmp"
+	cmd.Dir = "/tmp"
 	err := cmd.Run()
-    if err == nil {
-       	cmd = exec.Command("git", "fetch", "--tags", "--depth=1")
-        cmd.Dir = tmp
-        err = cmd.Run()
-    }
+	if err == nil {
+		cmd = exec.Command("git", "fetch", "--tags", "--depth=1")
+		cmd.Dir = tmp
+		err = cmd.Run()
+	}
 	buff := new(bytes.Buffer)
 	read := bufio.NewReader(buff)
-    var line []byte
-    var tag string
-    var date time.Time
-    if err != nil {
-        s = results.Unavailable
-        goto CLEANUP
-    }
-    cmd = exec.Command("git", "log", "--tags", "-n 10", "--format='%S %cI'")
-    cmd.Dir = tmp
+	var line []byte
+	var tag string
+	var date time.Time
+	if err != nil {
+		s = results.Unavailable
+		goto CLEANUP
+	}
+	cmd = exec.Command("git", "log", "--tags", "-n 10", "--format='%S %cI'")
+	cmd.Dir = tmp
 	cmd.Stdout = buff
-    cmd.Run()
+	cmd.Run()
 	line, _, err = read.ReadLine()
 	for err == nil {
 		pieces = strings.Fields(string(line))
 		tag = pieces[0]
-        date, _ = time.Parse("2006-01-02T15:04:05-07:00", pieces[1])
+		date, _ = time.Parse("2006-01-02T15:04:05-07:00", pieces[1])
 		r = results.NewResult(repoName, tag, "git|"+name, date)
 		line, _, err = read.ReadLine()
 	}
 	if err != io.EOF || r == nil {
 		s = results.NotFound
 	} else {
-        s = results.OK
-    }
+		s = results.OK
+	}
 CLEANUP:
-    os.RemoveAll(tmp)
+	os.RemoveAll(tmp)
 	return
 }
 
