@@ -37,11 +37,11 @@ const (
 	// SourceFormat3 is the string format for KDE sources with 3 pieces
 	SourceFormat3 = "https://download.kde.org/%s/%s/%s-%s.tar.xz"
 	// SourceFormat4 is the string format for KDE sources with 4 pieces
-	SourceFormat4 = "https://download.kde.org/%s/%s/%s/%s-%s.tar.xz"
+	SourceFormat4 = "https://cdn.download.kde.org/%s/%s/%s/%s-%s.tar.xz"
 	// SourceFormat5 is the string format for KDE sources with 5 pieces
-	SourceFormat5 = "https://download.kde.org/%s/%s/%s/%s/%s-%s.tar.xz"
+	SourceFormat5 = "https://cdn.download.kde.org/%s/%s/%s/%s/%s-%s.tar.xz"
 	// SourceFormat6 is the string format for KDE sources with 6 pieces
-	SourceFormat6 = "https://download.kde.org/%s/%s/%s/%s/%s/%s-%s.tar.xz"
+	SourceFormat6 = "https://cdn.download.kde.org/%s/%s/%s/%s/%s/%s-%s.tar.xz"
 )
 
 // TarballRegex matches KDE sources
