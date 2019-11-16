@@ -40,20 +40,14 @@ func (p Provider) Name() string {
 func (p Provider) Latest(name string) (r *results.Result, s results.Status) {
 	pieces := strings.Split(name, "/")
 	repoName := strings.Split(pieces[len(pieces)-1], ".")[0]
-    cwd, _ := os.Getwd()
-    err := os.Chdir("/tmp")
-    if err != nil {
-        s = results.Unavailable
-        return
-    }
+    tmp := fmt.Sprintf("/tmp/%s", repoName)
 	cmd := exec.Command("git", "clone", "--depth=1", name)
-	err = cmd.Run()
+    cmd.Dir = "/tmp"
+	err := cmd.Run()
     if err == nil {
-        err = os.Chdir(fmt.Sprintf("./%s", repoName))
-        if err == nil {
-        	cmd = exec.Command("git", "fetch", "--tags", "--depth=1")
-	        err = cmd.Run()
-        }
+       	cmd = exec.Command("git", "fetch", "--tags", "--depth=1")
+        cmd.Dir = tmp
+        err = cmd.Run()
     }
 	buff := new(bytes.Buffer)
 	read := bufio.NewReader(buff)
@@ -65,6 +59,7 @@ func (p Provider) Latest(name string) (r *results.Result, s results.Status) {
         goto CLEANUP
     }
     cmd = exec.Command("git", "log", "--tags", "-n 10", "--format='%S %cI'")
+    cmd.Dir = tmp
 	cmd.Stdout = buff
     cmd.Run()
 	line, _, err = read.ReadLine()
@@ -81,8 +76,7 @@ func (p Provider) Latest(name string) (r *results.Result, s results.Status) {
         s = results.OK
     }
 CLEANUP:
-    os.RemoveAll(fmt.Sprintf("/tmp/%s", repoName))
-    os.Chdir(cwd)
+    os.RemoveAll(tmp)
 	return
 }
 
