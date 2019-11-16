@@ -40,6 +40,7 @@ func (p Provider) Name() string {
 func (p Provider) Latest(name string) (r *results.Result, s results.Status) {
 	pieces := strings.Split(name, "/")
 	repoName := strings.Split(pieces[len(pieces)-1], ".")[0]
+    cwd, _ := os.Getwd()
     err := os.Chdir("/tmp")
     if err != nil {
         s = results.Unavailable
@@ -81,6 +82,7 @@ func (p Provider) Latest(name string) (r *results.Result, s results.Status) {
     }
 CLEANUP:
     os.RemoveAll(fmt.Sprintf("/tmp/%s", repoName))
+    os.Chdir(cwd)
 	return
 }
 
