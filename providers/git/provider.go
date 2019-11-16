@@ -19,11 +19,13 @@ package git
 import (
 	"bufio"
 	"bytes"
+    "fmt"
 	"github.com/DataDrake/cuppa/results"
 	"io"
 	"os/exec"
 	"strings"
 	"time"
+    "os"
 )
 
 // Provider provides a common interface for each of the backend providers
@@ -35,31 +37,51 @@ func (p Provider) Name() string {
 }
 
 // Latest finds the newest release for a Git package
-func (p Provider) Latest(name string) (*results.Result, results.Status) {
-	cmd := exec.Command("git", "ls-remote", "--tags", name)
-	buff := new(bytes.Buffer)
-	cmd.Stdout = buff
-	read := bufio.NewReader(buff)
-	err := cmd.Run()
-	line, _, err := read.ReadLine()
-	var r *results.Result
+func (p Provider) Latest(name string) (r *results.Result, s results.Status) {
 	pieces := strings.Split(name, "/")
 	repoName := strings.Split(pieces[len(pieces)-1], ".")[0]
+    err := os.Chdir("/tmp")
+    if err != nil {
+        s = results.Unavailable
+        return
+    }
+	cmd := exec.Command("git", "clone", "--depth=1", name)
+	err = cmd.Run()
+    if err == nil {
+        err = os.Chdir(fmt.Sprintf("./%s", repoName))
+        if err == nil {
+        	cmd = exec.Command("git", "fetch", "--tags", "--depth=1")
+	        err = cmd.Run()
+        }
+    }
+	buff := new(bytes.Buffer)
+	read := bufio.NewReader(buff)
+    var line []byte
+    var tag string
+    var date time.Time
+    if err != nil {
+        s = results.Unavailable
+        goto CLEANUP
+    }
+    cmd = exec.Command("git", "log", "--tags", "-n 10", "--format='%S %cI'")
+	cmd.Stdout = buff
+    cmd.Run()
+	line, _, err = read.ReadLine()
 	for err == nil {
-		pieces := strings.Split(string(line), "/")
-		tag := pieces[0]
-		if len(pieces) > 1 {
-			tag = pieces[len(pieces)-1]
-		}
-		if !strings.HasSuffix(tag, "{}") {
-			r = results.NewResult(repoName, tag, "git|"+name, time.Time{})
-		}
+		pieces = strings.Fields(string(line))
+		tag = pieces[0]
+        date, _ = time.Parse("2006-01-02T15:04:05-07:00", pieces[1])
+		r = results.NewResult(repoName, tag, "git|"+name, date)
 		line, _, err = read.ReadLine()
 	}
 	if err != io.EOF || r == nil {
-		return nil, results.NotFound
-	}
-	return r, results.OK
+		s = results.NotFound
+	} else {
+        s = results.OK
+    }
+CLEANUP:
+    os.RemoveAll(fmt.Sprintf("/tmp/%s", repoName))
+	return
 }
 
 // Match checks to see if this provider can handle this kind of query
@@ -76,7 +98,7 @@ func (p Provider) Match(query string) string {
 
 // Releases finds all matching releases for a Git package
 func (p Provider) Releases(name string) (*results.ResultSet, results.Status) {
-	cmd := exec.Command("git", "ls-remote", "--tags", name)
+	cmd := exec.Command("git", "ls-remote", "--tags", "--sort='-*authordate'", name)
 	buff := new(bytes.Buffer)
 	cmd.Stdout = buff
 	read := bufio.NewReader(buff)

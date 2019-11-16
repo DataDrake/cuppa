@@ -48,6 +48,16 @@ query {
         refs (refPrefix: "refs/tags/", last: %d){
             nodes {
                 name
+                target {
+                    ... on Commit {
+                        committedDate
+                    }
+                    ... on Tag {
+                        tagger {
+                            date
+                        }
+                    }
+                }
             }
         }
     }
@@ -76,6 +86,12 @@ type RepoQueryResult struct {
 			Refs struct {
 				Nodes []struct {
 					Name string `json:"name"`
+                    Target struct {
+                        Date string `json:"committedDate"`
+                        Tagger struct {
+                            Date string `json:"date"`
+                        } `json:"tagger"`
+                    } `json:"target"`
 				} `json:"nodes"`
 			} `json:"refs"`
 		} `json:"repository"`
@@ -85,11 +101,14 @@ type RepoQueryResult struct {
 // Convert turns a RepoQueryResult into a Cuppa ResultSet
 func (rqr RepoQueryResult) Convert(name string) (rs *results.ResultSet) {
 	rs = results.NewResultSet(name)
+    var err error
 	for _, tag := range rqr.Data.Repository.Refs.Nodes {
 		pre := false
+        found := false
 		var published time.Time
 		for _, node := range rqr.Data.Repository.Releases.Nodes {
 			if node.Tag.Name == tag.Name {
+                found = true
 				if node.IsPrerelease {
 					pre = true
 				}
@@ -99,6 +118,16 @@ func (rqr RepoQueryResult) Convert(name string) (rs *results.ResultSet) {
 		if pre {
 			continue
 		}
+        if !found {
+            if len(tag.Target.Date) > 0 {
+                published, _ = time.Parse(time.RFC3339, tag.Target.Date)
+            } else if len(tag.Target.Tagger.Date) > 0 {
+                published, err = time.Parse(time.RFC3339, tag.Target.Tagger.Date)
+                if err != nil {
+                    published, _ = time.Parse("2006-01-02T15:04:05-07:00", tag.Target.Tagger.Date)
+                }
+            }
+        }
 		r := results.NewResult(name, tag.Name, fmt.Sprintf(SourceFormat, name, tag.Name), published)
 		rs.AddResult(r)
 	}
