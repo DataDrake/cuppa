@@ -31,11 +31,10 @@ type Upstream struct {
 
 // Match checks if the provided path matches HostPattern
 func (u Upstream) Match(path string) string {
-	sm := u.HostPattern.FindStringSubmatch(path)
-	if len(sm) == 0 {
-		return ""
+	if sm := u.HostPattern.FindStringSubmatch(path); len(sm) > 0 {
+		return sm[0]
 	}
-	return sm[0]
+	return ""
 }
 
 // Parse reads a directory listing for a given path and Upstream

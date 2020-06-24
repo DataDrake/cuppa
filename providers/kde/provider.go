@@ -18,20 +18,14 @@ package kde
 
 import (
 	"bytes"
-	"compress/bzip2"
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
-	"io/ioutil"
-	"net/http"
-	"os"
 	"regexp"
 	"strings"
 	"time"
 )
 
 const (
-	// ListingURL is the location of the KDE FTP file listing
-	ListingURL = "https://download.kde.org/ls-lR.bz2"
 	// ListingPrefix is the prefix of all paths in the KDE listing that is hidden by HTTP
 	ListingPrefix = "/srv/archives/ftp/"
 	// SourceFormat3 is the string format for KDE sources with 3 pieces
@@ -50,54 +44,33 @@ var TarballRegex = regexp.MustCompile("https?://.*download.kde.org/(.+)")
 // Provider is the upstream provider interface for KDE
 type Provider struct{}
 
-var listing []byte
-
-func getListing() {
-	// Query the API
-	resp, err := http.Get(ListingURL)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		return
-	}
-	defer resp.Body.Close()
-	// Translate Status Code
-	if resp.StatusCode != 200 {
-		return
-	}
-	body := bzip2.NewReader(resp.Body)
-	listing, _ = ioutil.ReadAll(body)
-}
-
-// Latest finds the newest release for a KDE package
-func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
-	rs, s := c.Releases(name)
-	if s != results.OK {
-		return
-	}
-	r = rs.Last()
-	return
-}
-
-// Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
-	sm := TarballRegex.FindStringSubmatch(query)
-	if len(sm) != 2 {
-		return ""
-	}
-	pieces := strings.Split(sm[1], "/")
-	if len(pieces) < 3 || len(pieces) > 6 {
-		return ""
-	}
-	return sm[1]
-}
-
 // Name gives the name of this provider
 func (c Provider) Name() string {
 	return "KDE"
 }
 
+// Match checks to see if this provider can handle this kind of query
+func (c Provider) Match(query string) string {
+	if sm := TarballRegex.FindStringSubmatch(query); len(sm) > 1 {
+		pieces := strings.Split(sm[1], "/")
+		if len(pieces) > 2 || len(pieces) < 7 {
+			return sm[1]
+		}
+	}
+	return ""
+}
+
+// Latest finds the newest release for a KDE package
+func (c Provider) Latest(name string) (r *results.Result, err error) {
+	rs, err := c.Releases(name)
+	if err == nil {
+		r = rs.Last()
+	}
+	return
+}
+
 // Releases finds all matching releases for a KDE package
-func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
+func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
 	if len(listing) == 0 {
 		getListing()
 	}
@@ -125,10 +98,7 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 		}
 		for line != "\n" {
 			line, err = buff.ReadString('\n')
-			if err != nil {
-				break
-			}
-			if line == "\n" {
+			if err != nil || line == "\n" {
 				break
 			}
 			fields := strings.Fields(line)
@@ -164,5 +134,6 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 		}
 		break
 	}
+	err = nil
 	return
 }

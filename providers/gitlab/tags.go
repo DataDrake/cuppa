@@ -21,14 +21,12 @@ import (
 )
 
 // Tags is a set of one or more GitLab tags
-type Tags struct {
-	Tags []Tag
-}
+type Tags []Tag
 
 // Convert turns a GitLab result set into a Cuppa ResultSet
 func (gls Tags) Convert(host, name string) *results.ResultSet {
 	rs := results.NewResultSet(name)
-	for _, rel := range gls.Tags {
+	for _, rel := range gls {
 		r := rel.Convert(host, name)
 		rs.AddResult(r)
 	}

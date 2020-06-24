@@ -20,8 +20,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
+	log "github.com/DataDrake/waterlog"
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
 )
@@ -39,98 +39,90 @@ var TarballRegex = regexp.MustCompile("https?://[^/]*py[^/]*/packages/(?:[^/]+/)
 // Provider is the upstream provider interface for pypi
 type Provider struct{}
 
+// Name gives the name of this provider
+func (c Provider) Name() string {
+	return "PyPi"
+}
+
+// Match checks to see if this provider can handle this kind of query
+func (c Provider) Match(query string) string {
+	if sm := TarballRegex.FindStringSubmatch(query); len(sm) > 1 {
+		pieces := strings.Split(sm[1], "-")
+		if len(pieces) > 2 {
+			return strings.Join(pieces[0:len(pieces)-1], "-")
+		}
+		return pieces[0]
+	}
+	return ""
+}
+
 // Latest finds the newest release for a pypi package
-func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
+func (c Provider) Latest(name string) (r *results.Result, err error) {
 	// Query the API
 	resp, err := http.Get(fmt.Sprintf(SourceAPI, name))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+		log.Debugf("Failed to get latest: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
-		s = results.OK
+		break
 	case 404:
-		s = results.NotFound
+		err = results.NotFound
+		return
 	default:
-		s = results.Unavailable
-	}
-
-	// Fail if not OK
-	if s != results.OK {
+		err = results.Unavailable
 		return
 	}
-
+	// Decode response
 	dec := json.NewDecoder(resp.Body)
-	cr := &LatestSource{}
-	err = dec.Decode(cr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+	var cr LatestSource
+	if err = dec.Decode(&cr); err != nil {
+		log.Debugf("Failed to decode latest: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	r = cr.Convert(name)
 	return
 }
 
-// Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
-	sm := TarballRegex.FindStringSubmatch(query)
-	if len(sm) != 2 {
-		return ""
-	}
-	pieces := strings.Split(sm[1], "-")
-	if len(pieces) > 2 {
-		return strings.Join(pieces[0:len(pieces)-1], "-")
-	}
-	return pieces[0]
-}
-
-// Name gives the name of this provider
-func (c Provider) Name() string {
-	return "PyPi"
-}
-
 // Releases finds all matching releases for a pypi package
-func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
+func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
 	// Query the API
 	resp, err := http.Get(fmt.Sprintf(SourceAPI, name))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+		log.Debugf("Failed to get releases: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
-		s = results.OK
+		break
 	case 404:
-		s = results.NotFound
+		err = results.NotFound
+		return
 	default:
-		s = results.Unavailable
-	}
-
-	// Fail if not OK
-	if s != results.OK {
+		err = results.Unavailable
 		return
 	}
-
+	// Decode response
 	dec := json.NewDecoder(resp.Body)
-	crs := &Releases{}
-	err = dec.Decode(crs)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+	var crs Releases
+	if err = dec.Decode(&crs); err != nil {
+		log.Debugf("Failed to decode releases: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	if len(crs.Releases) == 0 {
-		s = results.NotFound
+		err = results.NotFound
 		return
 	}
 	rs = crs.Convert(name)
+	err = nil
 	return
 }

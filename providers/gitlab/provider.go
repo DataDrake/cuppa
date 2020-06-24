@@ -20,8 +20,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
+	log "github.com/DataDrake/waterlog"
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
 )
@@ -34,74 +34,69 @@ const (
 	TagsEndpoint = "https://%s/api/v4/projects/%s/repository/tags"
 )
 
-// SourceRegex is the regex for GitLab sources
-var SourceRegex = regexp.MustCompile("https?://(gitlab[^/]+)/(.+/[^/.]+)/\\-/")
-
-// VersionRegex is used to parse GitLab version numbers
-var VersionRegex = regexp.MustCompile("(?:\\d+\\.)*\\d+\\w*")
+var (
+	// SourceRegex is the regex for GitLab sources
+	SourceRegex = regexp.MustCompile("https?://(gitlab[^/]+)/(.+/[^/.]+)/\\-/")
+	// VersionRegex is used to parse GitLab version numbers
+	VersionRegex = regexp.MustCompile("(?:\\d+\\.)*\\d+\\w*")
+)
 
 // Provider is the upstream provider interface for GitLab
 type Provider struct{}
-
-// Latest finds the newest release for a GitLab package
-func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
-	rs, s := c.Releases(name)
-	if s != results.OK {
-		return
-	}
-	r = rs.Last()
-	return
-}
-
-// Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
-	sm := SourceRegex.FindStringSubmatch(query)
-	if len(sm) != 3 {
-		return ""
-	}
-	return sm[0]
-}
 
 // Name gives the name of this provider
 func (c Provider) Name() string {
 	return "GitLab"
 }
 
+// Match checks to see if this provider can handle this kind of query
+func (c Provider) Match(query string) string {
+	if sm := SourceRegex.FindStringSubmatch(query); len(sm) > 2 {
+		return sm[0]
+	}
+	return ""
+}
+
+// Latest finds the newest release for a GitLab package
+func (c Provider) Latest(name string) (r *results.Result, err error) {
+	rs, err := c.Releases(name)
+	if err == nil {
+		r = rs.Last()
+	}
+	return
+}
+
 // Releases finds all matching releases for a GitLab package
-func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
+func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
 	// Query the API
 	sm := SourceRegex.FindStringSubmatch(name)
 	id := strings.Join(strings.Split(sm[2], "/"), "%2f")
 	resp, err := http.Get(fmt.Sprintf(TagsEndpoint, sm[1], id))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+		log.Debugf("Failed to get releases: %s\n", err)
+		err = results.Unavailable
 		return
 	}
-
 	defer resp.Body.Close()
 	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
-		s = results.OK
+		break
 	case 404:
-		s = results.NotFound
+		err = results.NotFound
+		return
 	default:
-		s = results.Unavailable
-	}
-	// Fail if not OK
-	if s != results.OK {
+		err = results.Unavailable
 		return
 	}
+	// Decode response
 	dec := json.NewDecoder(resp.Body)
-	keys := make([]Tag, 0)
-	err = dec.Decode(&keys)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+	var tags Tags
+	if err = dec.Decode(&tags); err != nil {
+		log.Debugf("Failed to decode response: %s\n", err)
+		err = results.Unavailable
 		return
 	}
-	tags := &Tags{keys}
 	rs = tags.Convert(sm[1], sm[2])
 	return
 }

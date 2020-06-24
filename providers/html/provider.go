@@ -17,43 +17,40 @@
 package html
 
 import (
-	"fmt"
 	"github.com/DataDrake/cuppa/results"
+	log "github.com/DataDrake/waterlog"
 	"net/http"
-	"os"
 )
 
 // Provider is the upstream provider interface for HTML
 type Provider struct{}
-
-// Latest finds the newest release for a GNOME package
-func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
-	rs, s := c.Releases(name)
-	if s != results.OK {
-		return
-	}
-	r = rs.Last()
-	return
-}
-
-// Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
-	for _, upstream := range upstreams {
-		name := upstream.Match(query)
-		if len(name) != 0 {
-			return name
-		}
-	}
-	return ""
-}
 
 // Name gives the name of this provider
 func (c Provider) Name() string {
 	return "HTML"
 }
 
+// Match checks to see if this provider can handle this kind of query
+func (c Provider) Match(query string) string {
+	for _, upstream := range upstreams {
+		if name := upstream.Match(query); len(name) > 0 {
+			return name
+		}
+	}
+	return ""
+}
+
+// Latest finds the newest release for a GNOME package
+func (c Provider) Latest(name string) (r *results.Result, err error) {
+	rs, err := c.Releases(name)
+	if err == nil {
+		r = rs.Last()
+	}
+	return
+}
+
 // Releases finds all matching releases for a rubygems package
-func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
+func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
 	var upstream Upstream
 	for i := range upstreams {
 		if len(upstreams[i].Match(name)) != 0 {
@@ -64,27 +61,24 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	sm := upstream.HostPattern.FindStringSubmatch(name)
 	resp, err := http.Get(sm[1])
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+		log.Debugf("Failed to get releases: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
-		s = results.OK
+		break
 	case 404:
-		s = results.NotFound
+		err = results.NotFound
+		return
 	default:
-		s = results.Unavailable
-	}
-	// Fail if not OK
-	if s != results.OK {
+		err = results.Unavailable
 		return
 	}
-	rs, err = upstream.Parse(name, resp.Body)
-	if err != nil {
-		s = results.NotFound
+	if rs, err = upstream.Parse(name, resp.Body); err != nil {
+		err = results.NotFound
 	}
 	return
 }

@@ -20,8 +20,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
+	log "github.com/DataDrake/waterlog"
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
 )
@@ -39,122 +39,73 @@ var SearchRegex = regexp.MustCompile("https?://*(?:/.*cpan.org)(?:/CPAN)?/author
 // Provider is the upstream provider interface for CPAN
 type Provider struct{}
 
-// Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
-	sm := SearchRegex.FindStringSubmatch(query)
-	if len(sm) == 0 {
-		return ""
-	}
-	sms := strings.Split(sm[1], "/")
-	filename := sms[len(sms)-1]
-	pieces := strings.Split(filename, "-")
-	if len(pieces) > 2 {
-		return strings.Join(pieces[0:len(pieces)-1], "-")
-	}
-	return pieces[0]
-}
-
 // Name gives the name of this provider
 func (c Provider) Name() string {
 	return "CPAN"
 }
 
-// APIModule holds the name of a Perl Module
-type APIModule struct {
-	Module string `json:"main_module"`
-}
-
-func nameToModule(name string) (module string, s results.Status) {
-	// Query the Release API
-	resp, err := http.Get(fmt.Sprintf(APIRelease, name))
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
-		return
+// Match checks to see if this provider can handle this kind of query
+func (c Provider) Match(query string) string {
+	if sm := SearchRegex.FindStringSubmatch(query); len(sm) > 0 {
+		sms := strings.Split(sm[1], "/")
+		filename := sms[len(sms)-1]
+		pieces := strings.Split(filename, "-")
+		if len(pieces) > 2 {
+			return strings.Join(pieces[0:len(pieces)-1], "-")
+		}
+		return pieces[0]
 	}
-	defer resp.Body.Close()
-	// Translate Status Code
-	switch resp.StatusCode {
-	case 200:
-		s = results.OK
-	case 404:
-		s = results.NotFound
-	default:
-		s = results.Unavailable
-	}
-
-	// Fail if not OK
-	if s != results.OK {
-		return
-	}
-
-	dec := json.NewDecoder(resp.Body)
-	r := &APIModule{}
-	err = dec.Decode(r)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
-		return
-	}
-	module = r.Module
-	return
+	return ""
 }
 
 // Latest finds the newest release for a CPAN package
-func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
+func (c Provider) Latest(name string) (r *results.Result, err error) {
 	// Query the APIDownloadURL
-	module, s := nameToModule(name)
-	if s != results.OK {
+	module, err := nameToModule(name)
+	if err != nil {
 		return
 	}
 	resp, err := http.Get(fmt.Sprintf(APIDownloadURL, module))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+		log.Debugf("Failed to get releases: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
-		s = results.OK
+		break
 	case 404:
-		s = results.NotFound
+		err = results.NotFound
+		return
 	default:
-		s = results.Unavailable
-	}
-
-	// Fail if not OK
-	if s != results.OK {
+		err = results.Unavailable
 		return
 	}
-
+	// Decode response
 	dec := json.NewDecoder(resp.Body)
-	rs := &Release{}
-	err = dec.Decode(rs)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+	var rel Release
+	if err = dec.Decode(&rel); err != nil {
+		log.Debugf("Failed to decode response: %s\n", err)
+		err = results.Unavailable
 		return
 	}
-	if len(rs.Error) > 0 {
-		s = results.NotFound
+	if len(rel.Error) > 0 {
+		err = results.NotFound
 		return
 	}
-	r = rs.Convert(name)
-	if r == nil {
-		s = results.NotFound
+	if r = rel.Convert(name); r == nil {
+		err = results.NotFound
 	}
 	return
 }
 
 // Releases finds all matching releases for a CPAN package
-func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
-	r, s := c.Latest(name)
-	if s != results.OK {
-		return
+func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
+	if r, err := c.Latest(name); err == nil {
+		rs = results.NewResultSet(name)
+		rs.AddResult(r)
 	}
-	rs = results.NewResultSet(name)
-	rs.AddResult(r)
 	return
 }

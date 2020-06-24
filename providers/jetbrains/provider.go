@@ -20,8 +20,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
+	log "github.com/DataDrake/waterlog"
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
 )
@@ -58,98 +58,89 @@ var SourceRegex = regexp.MustCompile("https?://download.jetbrains.com/.+?/(.+?)-
 // Provider is the upstream provider interface for JetBrains
 type Provider struct{}
 
+// Name gives the name of this provider
+func (c Provider) Name() string {
+	return "JetBrains"
+}
+
+// Match checks to see if this provider can handle this kind of query
+func (c Provider) Match(query string) string {
+	if sm := SourceRegex.FindStringSubmatch(query); len(sm) > 1 {
+		return strings.ToLower(sm[1])
+	}
+	return ""
+}
+
 // Latest finds the newest release for a JetBrains package
-func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
+func (c Provider) Latest(name string) (r *results.Result, err error) {
 	// Query the API
 	code := ReleaseCodes[name]
 	resp, err := http.Get(fmt.Sprintf(LatestAPI, code))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+		log.Debugf("Failed to get latest: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
-		s = results.OK
+		break
 	case 404:
-		s = results.NotFound
+		err = results.NotFound
+		return
 	default:
-		s = results.Unavailable
-	}
-
-	// Fail if not OK
-	if s != results.OK {
+		err = results.Unavailable
 		return
 	}
-
+	// Decode response
 	dec := json.NewDecoder(resp.Body)
-	jbs := make(Releases)
-	err = dec.Decode(&jbs)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+	var jbs Releases
+	if err = dec.Decode(&jbs); err != nil {
+		log.Debugf("Failed to decode response: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	if jbs[code] == nil || len(jbs[code]) == 0 {
-		s = results.NotFound
+		err = results.NotFound
 		return
 	}
 	r = jbs.Convert(name).First()
 	return
 }
 
-// Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
-	sm := SourceRegex.FindStringSubmatch(query)
-	if len(sm) != 2 {
-		return ""
-	}
-	return strings.ToLower(sm[1])
-}
-
-// Name gives the name of this provider
-func (c Provider) Name() string {
-	return "JetBrains"
-}
-
 // Releases finds all matching releases for a JetBrains package
-func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
+func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
 	// Query the API
 	code := ReleaseCodes[name]
 	resp, err := http.Get(fmt.Sprintf(ReleasesAPI, code))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+		log.Debugf("Failed to get releases: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
-		s = results.OK
+		break
 	case 404:
-		s = results.NotFound
+		err = results.NotFound
+		return
 	default:
-		s = results.Unavailable
-	}
-
-	// Fail if not OK
-	if s != results.OK {
+		err = results.Unavailable
 		return
 	}
-
+	// Decode response
 	dec := json.NewDecoder(resp.Body)
-	jbs := make(Releases)
-	err = dec.Decode(&jbs)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+	var jbs Releases
+	if err = dec.Decode(&jbs); err != nil {
+		log.Debugf("Failed to decode response: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	if jbs[code] == nil || len(jbs[code]) == 0 {
-		s = results.NotFound
+		err = results.NotFound
 		return
 	}
 	rs = jbs.Convert(name)

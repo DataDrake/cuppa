@@ -19,6 +19,7 @@ package gnu
 import (
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
+	log "github.com/DataDrake/waterlog"
 	"github.com/jlaffaye/ftp"
 	"regexp"
 	"sort"
@@ -31,55 +32,55 @@ const (
 	GNUFormat = "https://mirrors.rit.edu/gnu/%s/%s"
 )
 
-// MirrorsRegex is a regex for a GNU mirror source
-var MirrorsRegex = regexp.MustCompile("(?:https?|ftp)://[^\\/]+/gnu/(.+)/[^\\/]+$")
-
-// TarballRegex is a regex for finding tarball files
-var TarballRegex = regexp.MustCompile("^(.+)-(.+)\\.tar\\..+z$")
+var (
+	// MirrorsRegex is a regex for a GNU mirror source
+	MirrorsRegex = regexp.MustCompile("(?:https?|ftp)://[^\\/]+/gnu/(.+)/[^\\/]+$")
+	// TarballRegex is a regex for finding tarball files
+	TarballRegex = regexp.MustCompile("^(.+)-(.+)\\.tar\\..+z$")
+)
 
 // Provider is the upstream provider interface for GNU
 type Provider struct{}
-
-// Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
-	sm := MirrorsRegex.FindStringSubmatch(query)
-	if len(sm) == 0 {
-		return ""
-	}
-	return sm[1]
-}
 
 // Name gives the name of this provider
 func (c Provider) Name() string {
 	return "GNU"
 }
 
+// Match checks to see if this provider can handle this kind of query
+func (c Provider) Match(query string) string {
+	if sm := MirrorsRegex.FindStringSubmatch(query); len(sm) > 1 {
+		return sm[1]
+	}
+	return ""
+}
+
 // Latest finds the newest release for a GNU package
-func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
-	rs, s := c.Releases(name)
-	if s == results.OK {
-		sort.Sort(rs)
+func (c Provider) Latest(name string) (r *results.Result, err error) {
+	rs, err := c.Releases(name)
+	if err == nil {
 		r = rs.Last()
 	}
 	return
 }
 
 // Releases finds all matching releases for a GNU package
-func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
+func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
 	client, err := ftp.Dial(MirrorsFTP)
 	if err != nil {
-		s = results.Unavailable
+		log.Debugf("Failed to connect to FTP server: %s\n", err)
+		err = results.Unavailable
 		return
 	}
-	err = client.Login("anonymous", "anonymous")
-	if err != nil {
-		s = results.Unavailable
+	if err = client.Login("anonymous", "anonymous"); err != nil {
+		log.Debugf("Failed to login to FTP server: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	entries, err := client.List("gnu" + "/" + name)
 	if err != nil {
-		fmt.Printf("FTP Error: %s\n", err.Error())
-		s = results.NotFound
+		log.Debugf("FTP Error: %s\n", err.Error())
+		err = results.NotFound
 		return
 	}
 	rs = results.NewResultSet(name)
@@ -87,13 +88,11 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 		if entry.Type != ftp.EntryTypeFile {
 			continue
 		}
-		sm := TarballRegex.FindStringSubmatch(entry.Name)
-		if len(sm) == 0 {
-			continue
+		if sm := TarballRegex.FindStringSubmatch(entry.Name); len(sm) > 3 {
+			r := results.NewResult(sm[1], sm[2], fmt.Sprintf(GNUFormat, name, entry.Name), entry.Time)
+			rs.AddResult(r)
 		}
-		r := results.NewResult(sm[1], sm[2], fmt.Sprintf(GNUFormat, name, entry.Name), entry.Time)
-		rs.AddResult(r)
-		s = results.OK
 	}
+	sort.Sort(rs)
 	return
 }

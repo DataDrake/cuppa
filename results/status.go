@@ -16,14 +16,13 @@
 
 package results
 
-// Status indicates the state of a query upon completion
-type Status uint8
+import (
+	"errors"
+)
 
-const (
-	// OK - Query completed successfully, with results
-	OK = Status(0)
+var (
 	// NotFound - Query completed successfully, without results
-	NotFound = Status(1)
+	NotFound = errors.New("not found")
 	// Unavailable - Provider could not be reached
-	Unavailable = Status(2)
+	Unavailable = errors.New("could not reach provider")
 )

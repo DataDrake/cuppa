@@ -36,10 +36,10 @@ import (
 
 // Provider provides a common interface for each of the backend providers
 type Provider interface {
-	Latest(name string) (*results.Result, results.Status)
-	Match(query string) string
 	Name() string
-	Releases(name string) (*results.ResultSet, results.Status)
+	Match(query string) string
+	Latest(name string) (*results.Result, error)
+	Releases(name string) (*results.ResultSet, error)
 }
 
 // All returns a list of all available providers

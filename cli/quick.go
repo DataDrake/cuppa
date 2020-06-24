@@ -19,7 +19,7 @@ package cli
 import (
 	"github.com/DataDrake/cli-ng/cmd"
 	"github.com/DataDrake/cuppa/providers"
-	"github.com/DataDrake/cuppa/results"
+	log "github.com/DataDrake/waterlog"
 	"github.com/DataDrake/waterlog/format"
 	"os"
 )
@@ -48,12 +48,13 @@ func QuickRun(r *cmd.RootCMD, c *cmd.CMD) {
 		if name == "" {
 			continue
 		}
-		r, s := p.Latest(name)
-		if s != results.OK {
+		r, err := p.Latest(name)
+		if err != nil {
 			continue
 		}
 		found = true
 		r.PrintSimple()
+		break
 	}
 	if !found {
 		log.Fatalln("No release found.")

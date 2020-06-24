@@ -20,9 +20,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
+	log "github.com/DataDrake/waterlog"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"regexp"
 )
 
@@ -41,77 +41,66 @@ var TarballRegex = regexp.MustCompile("https?://hackage.haskell.org/package/.*/(
 // Provider is the upstream provider interface for hackage
 type Provider struct{}
 
-// Latest finds the newest release for a hackage package
-func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
-	rs, s := c.Releases(name)
-	// Fail if not OK
-	if s != results.OK {
-		return
-	}
-	r = rs.First()
-	return
-}
-
-// Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
-	sm := TarballRegex.FindStringSubmatch(query)
-	if len(sm) == 0 {
-		return ""
-	}
-	return sm[1]
-}
-
 // Name gives the name of this provider
 func (c Provider) Name() string {
 	return "Hackage"
 }
 
-// Releases finds all matching releases for a hackage package
-func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
+// Match checks to see if this provider can handle this kind of query
+func (c Provider) Match(query string) string {
+	if sm := TarballRegex.FindStringSubmatch(query); len(sm) > 1 {
+		return sm[1]
+	}
+	return ""
+}
 
+// Latest finds the newest release for a hackage package
+func (c Provider) Latest(name string) (r *results.Result, err error) {
+	rs, err := c.Releases(name)
+	if err == nil {
+		r = rs.First()
+	}
+	return
+}
+
+// Releases finds all matching releases for a hackage package
+func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
 	// Query the API
 	r, err := http.NewRequest("GET", fmt.Sprintf(VersionsAPI, name), nil)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+		log.Debugf("Failed to create request: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	r.Header.Set("Accept", "application/json")
-
-	client := &http.Client{}
-
-	resp, err := client.Do(r)
+	resp, err := http.DefaultClient.Do(r)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+		log.Debugf("Failed to get versions: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
-		s = results.OK
+		break
 	case 404:
-		s = results.NotFound
+		err = results.NotFound
+		return
 	default:
-		s = results.Unavailable
-	}
-
-	// Fail if not OK
-	if s != results.OK {
+		err = results.Unavailable
 		return
 	}
-
+	// Decode response
 	dec := json.NewDecoder(resp.Body)
-	versions := &Versions{}
-	err = dec.Decode(versions)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+	var versions Versions
+	if err = dec.Decode(&versions); err != nil {
+		log.Debugf("Failed to decode versions: %s\n", err)
+		err = results.Unavailable
 		return
 	}
-
-	hrs := &Releases{}
+	// Process releases
+	var hrs Releases
 	for _, v := range versions.Normal {
 		hr := Release{
 			name:    name,
@@ -119,22 +108,23 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 		}
 		r, err := http.Get(fmt.Sprintf(UploadTimeAPI, name, v))
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err.Error())
+			log.Debugf("Failed to get upload time: %s\n", err)
 			continue
 		}
 		defer r.Body.Close()
 		dateRaw, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err.Error())
+			log.Debugf("Failed to read response: %s\n", err)
 			continue
 		}
 		hr.released = string(dateRaw)
 		hrs.Releases = append(hrs.Releases, hr)
 	}
 	if len(hrs.Releases) == 0 {
-		s = results.NotFound
+		err = results.NotFound
 		return
 	}
 	rs = hrs.Convert(name)
+	err = nil
 	return
 }

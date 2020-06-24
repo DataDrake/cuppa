@@ -44,10 +44,7 @@ var skipWords = []string{
 
 // AddResult appends a new Result
 func (rs *ResultSet) AddResult(r *Result) {
-	if r == nil {
-		return
-	}
-	if r.Version[0] == "N/A" {
+	if r == nil || r.Version[0] == "N/A" {
 		return
 	}
 	for _, part := range r.Version {
@@ -60,11 +57,6 @@ func (rs *ResultSet) AddResult(r *Result) {
 	rs.results = append(rs.results, r)
 }
 
-// Empty checks if there were no results
-func (rs *ResultSet) Empty() bool {
-	return len(rs.results) == 0
-}
-
 // First retrieves the first result from a query
 func (rs *ResultSet) First() *Result {
 	return rs.results[0]
@@ -72,31 +64,21 @@ func (rs *ResultSet) First() *Result {
 
 // Last retrieves the first result from a query
 func (rs *ResultSet) Last() *Result {
-	switch len(rs.results) {
-	case 0:
+	if rs.Len() == 0 {
 		return nil
-	case 1:
-		return rs.results[0]
-	default:
-		sort.Sort(rs)
-		return rs.results[len(rs.results)-1]
 	}
+	sort.Sort(rs)
+	return rs.results[len(rs.results)-1]
 }
 
 // PrintAll pretty-prints an entire ResultSet
 func (rs *ResultSet) PrintAll() {
 	fmt.Printf("%-25s: '%s'\n", "Results of Query", rs.query)
-	fmt.Printf("%-25s: %d\n\n", "Total Number of Results", len(rs.results))
+	fmt.Printf("%-25s: %d\n\n", "Total Number of Results", rs.Len())
 	sort.Sort(rs)
 	for _, r := range rs.results {
 		r.Print()
 	}
-}
-
-// PrintFirst pretty-prints the first result
-func (rs *ResultSet) PrintFirst() {
-	fmt.Printf("First Result of Query: '%s'\n", rs.query)
-	rs.results[0].Print()
 }
 
 // Len is the number of elements in the ResultSet (sort.Interface)

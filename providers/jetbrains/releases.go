@@ -28,8 +28,7 @@ func (jbs Releases) Convert(name string) *results.ResultSet {
 	rs := results.NewResultSet(name)
 	code := ReleaseCodes[name]
 	for _, rel := range jbs[code] {
-		r := rel.Convert()
-		if r != nil {
+		if r := rel.Convert(); r != nil {
 			r.Name = name
 			rs.AddResult(r)
 		}

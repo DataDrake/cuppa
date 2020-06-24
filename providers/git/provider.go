@@ -36,50 +36,6 @@ func (p Provider) Name() string {
 	return "Git"
 }
 
-// Latest finds the newest release for a Git package
-func (p Provider) Latest(name string) (r *results.Result, s results.Status) {
-	pieces := strings.Split(name, "/")
-	repoName := strings.Split(pieces[len(pieces)-1], ".")[0]
-	tmp := fmt.Sprintf("/tmp/%s", repoName)
-	cmd := exec.Command("git", "clone", "--depth=1", name)
-	cmd.Dir = "/tmp"
-	err := cmd.Run()
-	if err == nil {
-		cmd = exec.Command("git", "fetch", "--tags", "--depth=1")
-		cmd.Dir = tmp
-		err = cmd.Run()
-	}
-	buff := new(bytes.Buffer)
-	read := bufio.NewReader(buff)
-	var line []byte
-	var tag string
-	var date time.Time
-	if err != nil {
-		s = results.Unavailable
-		goto CLEANUP
-	}
-	cmd = exec.Command("git", "log", "--tags", "-n 10", "--format='%S %cI'")
-	cmd.Dir = tmp
-	cmd.Stdout = buff
-	cmd.Run()
-	line, _, err = read.ReadLine()
-	for err == nil {
-		pieces = strings.Fields(string(line))
-		tag = pieces[0]
-		date, _ = time.Parse("2006-01-02T15:04:05-07:00", pieces[1])
-		r = results.NewResult(repoName, tag, "git|"+name, date)
-		line, _, err = read.ReadLine()
-	}
-	if err != io.EOF || r == nil {
-		s = results.NotFound
-	} else {
-		s = results.OK
-	}
-CLEANUP:
-	os.RemoveAll(tmp)
-	return
-}
-
 // Match checks to see if this provider can handle this kind of query
 func (p Provider) Match(query string) string {
 	if strings.HasPrefix(query, "git|") || strings.HasSuffix(query, ".git") {
@@ -92,32 +48,58 @@ func (p Provider) Match(query string) string {
 	return ""
 }
 
+// Latest finds the newest release for a Git package
+func (p Provider) Latest(name string) (r *results.Result, err error) {
+	rs, err := p.Releases(name)
+	if err == nil {
+		r = rs.Last()
+	}
+	return
+}
+
 // Releases finds all matching releases for a Git package
-func (p Provider) Releases(name string) (*results.ResultSet, results.Status) {
-	cmd := exec.Command("git", "ls-remote", "--tags", "--sort='-*authordate'", name)
-	buff := new(bytes.Buffer)
-	cmd.Stdout = buff
-	read := bufio.NewReader(buff)
-	err := cmd.Run()
-	line, _, err := read.ReadLine()
-	var r *results.Result
+func (p Provider) Releases(name string) (rs *results.ResultSet, err error) {
 	pieces := strings.Split(name, "/")
 	repoName := strings.Split(pieces[len(pieces)-1], ".")[0]
-	rs := results.NewResultSet(repoName)
+	tmp := fmt.Sprintf("/tmp/%s", repoName)
+	defer os.RemoveAll(tmp)
+	// Shallow clone repo to temp directory
+	cmd := exec.Command("git", "clone", "--depth=1", name)
+	cmd.Dir = "/tmp"
+	if err := cmd.Run(); err == nil {
+		// Fetch tags from remote
+		cmd = exec.Command("git", "fetch", "--tags", "--depth=1")
+		cmd.Dir = tmp
+		err = cmd.Run()
+	}
+	if err != nil {
+		err = results.Unavailable
+		return
+	}
+	// Read git tags
+	var buff bytes.Buffer
+	read := bufio.NewReader(&buff)
+	var tag string
+	var date time.Time
+	cmd = exec.Command("git", "log", "--tags", "-n 10", "--format='%S %cI'")
+	cmd.Dir = tmp
+	cmd.Stdout = &buff
+	cmd.Run()
+	// Convert tags to releases
+	rs = results.NewResultSet(name)
+	line, _, err := read.ReadLine()
 	for err == nil {
-		pieces := strings.Split(string(line), "/")
-		tag := pieces[0]
-		if len(pieces) > 1 {
-			tag = pieces[len(pieces)-1]
-		}
-		if !strings.HasSuffix(tag, "{}") {
-			r = results.NewResult(repoName, tag, "git|"+name, time.Time{})
-			rs.AddResult(r)
-		}
+		pieces = strings.Fields(string(line))
+		tag = pieces[0]
+		date, _ = time.Parse("2006-01-02T15:04:05-07:00", pieces[1])
+		r := results.NewResult(repoName, tag, "git|"+name, date)
+		rs.AddResult(r)
 		line, _, err = read.ReadLine()
 	}
 	if err != io.EOF || rs.Len() == 0 {
-		return nil, results.NotFound
+		err = results.NotFound
+		return
 	}
-	return rs, results.OK
+	err = nil
+	return
 }

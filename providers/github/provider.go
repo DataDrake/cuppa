@@ -26,44 +26,40 @@ const (
 	SourceFormat = "https://github.com/%s/archive/%s.tar.gz"
 )
 
-// SourceRegex is the regex for Github sources
-var SourceRegex = regexp.MustCompile("github.com/([^/]+/[^/.]+)")
-
-// VersionRegex is used to parse Github version numbers
-var VersionRegex = regexp.MustCompile("(?:\\d+\\.)*\\d+\\w*")
+var (
+	// SourceRegex is the regex for Github sources
+	SourceRegex = regexp.MustCompile("github.com/([^/]+/[^/.]+)")
+	// VersionRegex is used to parse Github version numbers
+	VersionRegex = regexp.MustCompile("(?:\\d+\\.)*\\d+\\w*")
+)
 
 // Provider is the upstream provider interface for github
 type Provider struct{}
-
-// Latest finds the newest release for a github package
-func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
-	rs, s := c.GetReleases(name, 100)
-	if s != results.OK {
-		return
-	}
-	r = rs.Last()
-	if r == nil {
-		s = results.NotFound
-	}
-	return
-}
-
-// Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
-	sm := SourceRegex.FindStringSubmatch(query)
-	if len(sm) != 2 {
-		return ""
-	}
-	return sm[1]
-}
 
 // Name gives the name of this provider
 func (c Provider) Name() string {
 	return "GitHub"
 }
 
+// Match checks to see if this provider can handle this kind of query
+func (c Provider) Match(query string) string {
+	if sm := SourceRegex.FindStringSubmatch(query); len(sm) > 1 {
+		return sm[1]
+	}
+	return ""
+}
+
+// Latest finds the newest release for a github package
+func (c Provider) Latest(name string) (r *results.Result, err error) {
+	rs, err := c.GetReleases(name, 100)
+	if err == nil {
+		r = rs.Last()
+	}
+	return
+}
+
 // Releases finds all matching releases for a github package
-func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
-	rs, s = c.GetReleases(name, 100)
+func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
+	rs, err = c.GetReleases(name, 100)
 	return
 }

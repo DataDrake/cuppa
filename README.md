@@ -86,19 +86,21 @@ where CMD is the action to perform and URL is the link to an existing source.
 
 ### Example Sources
 
-| Provider  | URL |
-| --------- | --- |
-| CPAN      | https://cpan.metacpan.org/authors/id/T/TO/TODDR/IO-1.39.tar.gz |
-| Github    | https://github.com/DataDrake/cuppa/archive/v1.0.4.tar.gz |
-| GitLab    | https://gitlab.com/corectrl/corectrl/-/archive/v1.0.6/corectrl-v1.0.6.tar.gz |
-| GNOME     | https://download.gnome.org/sources/gnome-music/3.28/gnome-music-3.28.2.tar.xz |
-| Hackage   | https://hackage.haskell.org/package/mtl-2.2.2/mtl-2.2.2.tar.gz |
-| JetBrains | https://download.jetbrains.com/ruby/RubyMine-2017.3.3.tar.gz |
-| KDE       | https://download.kde.org/stable/applications/18.12.0/src/akonadi-18.12.0.tar.xz |
-| Launchpad | https://launchpad.net/catfish-search/1.4/1.4.4/+download/catfish-1.4.4.tar.gz |
-| PyPi      | https://pypi.python.org/packages/2c/a9/69f67f6d5d2fd80ef3d60dc5bef4971d837dc741be0d53295d3aabb5ec7f/pyparted-3.10.7.tar.gz |
-| Rubygems  | https://rubygems.org/downloads/sass-3.4.25.gem |
-
+| Provider   | URL |
+| ---------- | --- |
+| CPAN       | https://cpan.metacpan.org/authors/id/T/TO/TODDR/IO-1.39.tar.gz |
+| Git        | https://github.com/DataDrake/cuppa.git |
+| Github     | https://github.com/DataDrake/cuppa/archive/v1.0.4.tar.gz |
+| GitLab     | https://gitlab.com/corectrl/corectrl/-/archive/v1.0.6/corectrl-v1.0.6.tar.gz |
+| GNOME      | https://download.gnome.org/sources/gnome-music/3.28/gnome-music-3.28.2.tar.xz |
+| Hackage    | https://hackage.haskell.org/package/mtl-2.2.2/mtl-2.2.2.tar.gz |
+| HTML       | http://telepathy.freedesktop.org/releases/telepathy-logger/telepathy-logger-0.8.2.tar.bz2 |
+| JetBrains  | https://download.jetbrains.com/ruby/RubyMine-2017.3.3.tar.gz |
+| KDE        | https://download.kde.org/stable/applications/18.12.0/src/akonadi-18.12.0.tar.xz |
+| Launchpad  | https://launchpad.net/catfish-search/1.4/1.4.4/+download/catfish-1.4.4.tar.gz |
+| PyPi       | https://pypi.python.org/packages/2c/a9/69f67f6d5d2fd80ef3d60dc5bef4971d837dc741be0d53295d3aabb5ec7f/pyparted-3.10.7.tar.gz |
+| Rubygems   | https://rubygems.org/downloads/sass-3.4.25.gem |
+| Soureforge | https://sourceforge.net/projects/libmtp/files/libmtp/1.1.17/libmtp-1.1.17.tar.gz/download |
 ## License
  
 Copyright 2016-2018 Bryan T. Meyers <bmeyers@datadrake.com>

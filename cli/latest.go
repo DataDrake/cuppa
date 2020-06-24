@@ -19,7 +19,7 @@ package cli
 import (
 	"github.com/DataDrake/cli-ng/cmd"
 	"github.com/DataDrake/cuppa/providers"
-	"github.com/DataDrake/cuppa/results"
+	log "github.com/DataDrake/waterlog"
 	"os"
 )
 
@@ -48,9 +48,9 @@ func LatestRun(r *cmd.RootCMD, c *cmd.CMD) {
 			log.Warnf("\033[1m%s\033[21m does not match.\n", p.Name())
 			continue
 		}
-		r, s := p.Latest(name)
-		if s != results.OK {
-			log.Warnf("Could not get latest \033[1m%s\033[21m, code: %d\n", name, s)
+		r, err := p.Latest(name)
+		if err != nil {
+			log.Warnf("Could not get latest \033[1m%s\033[21m, reason: %s\n", name, err)
 			continue
 		}
 		found = true

@@ -27,8 +27,7 @@ type Versions []Version
 func (crs *Versions) Convert(name string) *results.ResultSet {
 	rs := results.NewResultSet(name)
 	for _, rel := range *crs {
-		r := rel.Convert(name)
-		if r != nil {
+		if r := rel.Convert(name); r != nil {
 			rs.AddResult(r)
 		}
 	}

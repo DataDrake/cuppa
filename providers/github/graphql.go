@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"github.com/DataDrake/cuppa/config"
 	"github.com/DataDrake/cuppa/results"
+	log "github.com/DataDrake/waterlog"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 )
@@ -135,54 +135,47 @@ func (rqr RepoQueryResult) Convert(name string) (rs *results.ResultSet) {
 }
 
 // GetReleases gets a number of releases for a given repo
-func (c Provider) GetReleases(name string, max int) (rs *results.ResultSet, s results.Status) {
+func (c Provider) GetReleases(name string, max int) (rs *results.ResultSet, err error) {
 	names := strings.Split(name, "/")
-
 	query := RepoQuery{
 		Query: fmt.Sprintf(RepoQueryFormat, names[0], names[1], max, max),
 	}
-	buff := new(bytes.Buffer)
-	enc := json.NewEncoder(buff)
-	err := enc.Encode(&query)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+	var buff bytes.Buffer
+	enc := json.NewEncoder(&buff)
+	if err = enc.Encode(&query); err != nil {
+		log.Debugf("Failed to encode request: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	// Query the API
-	req, _ := http.NewRequest("POST", GraphQLAPI, buff)
+	req, _ := http.NewRequest("POST", GraphQLAPI, &buff)
 	if key := config.Global.Github.Key; len(key) > 0 {
 		req.Header["Authorization"] = []string{"token " + key}
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+		log.Debugf("Failed to get releases: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
-		s = results.OK
+		break
 	case 404:
-		s = results.NotFound
+		err = results.NotFound
 		return
 	default:
-		s = results.Unavailable
-	}
-
-	// Fail if not OK
-	if s != results.OK {
+		err = results.Unavailable
 		return
 	}
-
+	// Decode resposne
 	dec := json.NewDecoder(resp.Body)
-	rqr := &RepoQueryResult{}
-	err = dec.Decode(rqr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+	var rqr RepoQueryResult
+	if err = dec.Decode(&rqr); err != nil {
+		log.Debugf("Failed to decode response: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	rs = rqr.Convert(name)

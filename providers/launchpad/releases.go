@@ -44,8 +44,7 @@ type Releases []Release
 func (lrs Releases) Convert(name string) *results.ResultSet {
 	rs := results.NewResultSet(name)
 	for _, rel := range lrs {
-		r := rel.Convert()
-		if r != nil {
+		if r := rel.Convert(); r != nil {
 			rs.AddResult(r)
 		}
 	}

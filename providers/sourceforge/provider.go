@@ -20,8 +20,8 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
+	log "github.com/DataDrake/waterlog"
 	"net/http"
-	"os"
 	"regexp"
 	"time"
 )
@@ -31,14 +31,12 @@ const (
 	API = "https://sourceforge.net/projects/%s/rss?path=/%s"
 )
 
-// TarballRegex matches SourceForge sources
-var TarballRegex = regexp.MustCompile("https?://.*sourceforge.net/projects?/(.+)/files/(.+/)?(.+?)-([\\d]+(?:.\\d+)*\\w*?)\\.(?:zip|tar\\..+z.*)(?:\\/download)?$")
-
-// ProjectRegex matches SourceForge sources
-var ProjectRegex = regexp.MustCompile("https?://.*sourceforge.net/projects?/(.+)/(?:files/)?(.+?/)?(.+?)-([\\d]+(?:.\\d+)*\\w*?).+$")
-
-// Provider is the upstream provider interface for SourceForge
-type Provider struct{}
+var (
+	// TarballRegex matches SourceForge sources
+	TarballRegex = regexp.MustCompile("https?://.*sourceforge.net/projects?/(.+)/files/(.+/)?(.+?)-([\\d]+(?:.\\d+)*\\w*?)\\.(?:zip|tar\\..+z.*)(?:\\/download)?$")
+	// ProjectRegex matches SourceForge sources
+	ProjectRegex = regexp.MustCompile("https?://.*sourceforge.net/projects?/(.+)/(?:files/)?(.+?/)?(.+?)-([\\d]+(?:.\\d+)*\\w*?).+$")
+)
 
 // Item represents an entry in the RSS Feed
 type Item struct {
@@ -57,25 +55,21 @@ type Feed struct {
 func (f *Feed) toResults(name string) *results.ResultSet {
 	rs := results.NewResultSet(name)
 	for _, item := range f.Items {
-		sm := TarballRegex.FindStringSubmatch(item.Link)
-		if len(sm) != 5 {
-			continue
+		if sm := TarballRegex.FindStringSubmatch(item.Link); len(sm) > 4 {
+			pub, _ := time.Parse(time.RFC1123, item.Date+"C")
+			r := results.NewResult(name, sm[4], item.Link, pub)
+			rs.AddResult(r)
 		}
-		pub, _ := time.Parse(time.RFC1123, item.Date+"C")
-		r := results.NewResult(name, sm[4], item.Link, pub)
-		rs.AddResult(r)
 	}
 	return rs
 }
 
-// Latest finds the newest release for a SourceForge package
-func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
-	rs, s := c.Releases(name)
-	if s != results.OK {
-		return
-	}
-	r = rs.First()
-	return
+// Provider is the upstream provider interface for SourceForge
+type Provider struct{}
+
+// Name gives the name of this provider
+func (c Provider) Name() string {
+	return "SourceForge"
 }
 
 // Match checks to see if this provider can handle this kind of query
@@ -83,20 +77,24 @@ func (c Provider) Match(query string) string {
 	sm := TarballRegex.FindStringSubmatch(query)
 	if len(sm) != 5 {
 		sm = ProjectRegex.FindStringSubmatch(query)
-		if len(sm) != 5 {
-			return ""
-		}
 	}
-	return sm[0]
+	if len(sm) == 5 {
+		return sm[0]
+	}
+	return ""
 }
 
-// Name gives the name of this provider
-func (c Provider) Name() string {
-	return "SourceForge"
+// Latest finds the newest release for a SourceForge package
+func (c Provider) Latest(name string) (r *results.Result, err error) {
+	rs, err := c.Releases(name)
+	if err == nil {
+		r = rs.First()
+	}
+	return
 }
 
 // Releases finds all matching releases for a SourceForge package
-func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
+func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
 	sm := TarballRegex.FindStringSubmatch(name)
 	if len(sm) != 5 {
 		sm = ProjectRegex.FindStringSubmatch(name)
@@ -105,37 +103,33 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status
 	// Query the API
 	resp, err := http.Get(fmt.Sprintf(API, sm[1], sm[2]))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+		log.Debugf("Failed to get releases: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
-		s = results.OK
+		break
 	case 404:
-		s = results.NotFound
+		err = results.NotFound
+		return
 	default:
-		s = results.Unavailable
-	}
-
-	// Fail if not OK
-	if s != results.OK {
+		err = results.Unavailable
 		return
 	}
-
+	// decode response
 	dec := xml.NewDecoder(resp.Body)
-	feed := &Feed{}
-	err = dec.Decode(feed)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+	var feed Feed
+	if err = dec.Decode(&feed); err != nil {
+		log.Debugf("Failed to decode releases: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	rs = feed.toResults(sm[3])
 	if rs.Len() == 0 {
-		s = results.NotFound
+		err = results.NotFound
 	}
 	return
 }

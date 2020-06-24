@@ -14,24 +14,31 @@
 // limitations under the License.
 //
 
-package hackage
+package kde
 
 import (
-	"github.com/DataDrake/cuppa/results"
+	"compress/bzip2"
+	log "github.com/DataDrake/waterlog"
+	"io/ioutil"
+	"net/http"
 )
 
-// Releases is a representation of one or more Hackage releases
-type Releases struct {
-	Releases []Release
-}
+const ListingURL = "https://download.kde.org/ls-lR.bz2"
 
-// Convert turns a Hackage result set into a Cuppa result set
-func (hrs *Releases) Convert(name string) *results.ResultSet {
-	rs := results.NewResultSet(name)
-	for _, rel := range hrs.Releases {
-		if r := rel.Convert(); r != nil {
-			rs.AddResult(r)
-		}
+var listing []byte
+
+func getListing() {
+	// Query the API
+	resp, err := http.Get(ListingURL)
+	if err != nil {
+		log.Debugf("Failed to get listing: %s\n", err)
+		return
 	}
-	return rs
+	defer resp.Body.Close()
+	// Translate Status Code
+	if resp.StatusCode != 200 {
+		return
+	}
+	body := bzip2.NewReader(resp.Body)
+	listing, _ = ioutil.ReadAll(body)
 }

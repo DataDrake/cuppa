@@ -19,6 +19,7 @@ package html
 import (
 	"encoding/xml"
 	"github.com/DataDrake/cuppa/results"
+	log "github.com/DataDrake/waterlog"
 	"io"
 	"regexp"
 	"strings"
@@ -65,8 +66,9 @@ func (c Config) Parse(name, path string, in io.Reader) (rs *results.ResultSet, e
 	dec.AutoClose = xml.HTMLAutoClose
 	dec.Entity = xml.HTMLEntity
 	var list DownloadList
-	err = dec.Decode(&list)
-	if err != nil {
+	if err = dec.Decode(&list); err != nil {
+		log.Debugf("Failed to decode download list: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	rs = results.NewResultSet(name)

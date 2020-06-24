@@ -20,8 +20,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
+	log "github.com/DataDrake/waterlog"
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -42,37 +42,50 @@ var GemRegex = regexp.MustCompile("https?://rubygems.org/downloads/(.+).gem")
 // Provider is the upstream provider interface for rubygems
 type Provider struct{}
 
+// Name gives the name of this provider
+func (c Provider) Name() string {
+	return "Rubygems"
+}
+
+// Match checks to see if this provider can handle this kind of query
+func (c Provider) Match(query string) string {
+	if sm := GemRegex.FindStringSubmatch(query); len(sm) > 1 {
+		pieces := strings.Split(sm[1], "-")
+		if len(pieces) > 2 {
+			return strings.Join(pieces[0:len(pieces)-1], "-")
+		}
+		return pieces[0]
+	}
+	return ""
+}
+
 // Latest finds the newest release for a rubygems package
-func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
+func (c Provider) Latest(name string) (r *results.Result, err error) {
 	//Query the API
 	resp, err := http.Get(fmt.Sprintf(LatestAPI, name))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+		log.Debugf("Failed to get latest: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
-		s = results.OK
+		break
 	case 404:
-		s = results.NotFound
+		err = results.NotFound
+		return
 	default:
-		s = results.Unavailable
-	}
-
-	// Fail if not OK
-	if s != results.OK {
+		err = results.Unavailable
 		return
 	}
-
+	// Decode repsone
 	dec := json.NewDecoder(resp.Body)
-	cr := &LatestVersion{}
-	err = dec.Decode(cr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+	var cr LatestVersion
+	if err = dec.Decode(&cr); err != nil {
+		log.Debugf("Failed to decode latest: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	r = cr.Convert(name)
@@ -80,61 +93,40 @@ func (c Provider) Latest(name string) (r *results.Result, s results.Status) {
 	return
 }
 
-// Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
-	sm := GemRegex.FindStringSubmatch(query)
-	if len(sm) != 2 {
-		return ""
-	}
-	pieces := strings.Split(sm[1], "-")
-	if len(pieces) > 2 {
-		return strings.Join(pieces[0:len(pieces)-1], "-")
-	}
-	return pieces[0]
-}
-
-// Name gives the name of this provider
-func (c Provider) Name() string {
-	return "Rubygems"
-}
-
 // Releases finds all matching releases for a rubygems package
-func (c Provider) Releases(name string) (rs *results.ResultSet, s results.Status) {
+func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
 	// Query the API
 	resp, err := http.Get(fmt.Sprintf(VersionsAPI, name))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+		log.Debugf("Failed to get releases: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	defer resp.Body.Close()
 	// Translate Status Code
 	switch resp.StatusCode {
 	case 200:
-		s = results.OK
+		break
 	case 404:
-		s = results.NotFound
+		err = results.NotFound
+		return
 	default:
-		s = results.Unavailable
-	}
-
-	// Fail if not OK
-	if s != results.OK {
+		err = results.Unavailable
 		return
 	}
 
 	dec := json.NewDecoder(resp.Body)
-	crs := make(Versions, 0)
-	err = dec.Decode(&crs)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		s = results.Unavailable
+	var crs Versions
+	if err = dec.Decode(&crs); err != nil {
+		log.Debugf("Failed to decode releases: %s\n", err)
+		err = results.Unavailable
 		return
 	}
 	if len(crs) == 0 {
-		s = results.NotFound
+		err = results.NotFound
 		return
 	}
 	rs = crs.Convert(name)
+	err = nil
 	return
 }

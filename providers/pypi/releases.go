@@ -37,8 +37,7 @@ type Releases struct {
 func (crs *Releases) Convert(name string) *results.ResultSet {
 	rs := results.NewResultSet(name)
 	for ver, rel := range crs.Releases {
-		r := ConvertURLS(rel, name, ver)
-		if r != nil {
+		if r := ConvertURLS(rel, name, ver); r != nil {
 			rs.AddResult(r)
 		}
 	}

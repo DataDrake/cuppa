@@ -18,6 +18,7 @@ package config
 
 import (
 	"github.com/BurntSushi/toml"
+	log "github.com/DataDrake/waterlog"
 	"os/user"
 	"path/filepath"
 )
@@ -38,10 +39,8 @@ func init() {
 	if err != nil {
 		return
 	}
-	Global = Config{}
 	configPath := filepath.Join(user.HomeDir, ".config", "cuppa")
-	_, err = toml.DecodeFile(configPath, &Global)
-	if err != nil {
-		return
+	if _, err = toml.DecodeFile(configPath, &Global); err != nil {
+		log.Fatalf("Failed to read config, reason: '%s'\n", err)
 	}
 }
