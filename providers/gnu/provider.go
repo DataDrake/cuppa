@@ -88,10 +88,13 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
 		if entry.Type != ftp.EntryTypeFile {
 			continue
 		}
-		if sm := TarballRegex.FindStringSubmatch(entry.Name); len(sm) > 3 {
+		if sm := TarballRegex.FindStringSubmatch(entry.Name); len(sm) > 2 {
 			r := results.NewResult(sm[1], sm[2], fmt.Sprintf(GNUFormat, name, entry.Name), entry.Time)
 			rs.AddResult(r)
 		}
+	}
+	if rs.Len() == 0 {
+		err = results.NotFound
 	}
 	sort.Sort(rs)
 	return
