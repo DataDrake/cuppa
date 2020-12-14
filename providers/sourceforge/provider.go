@@ -33,9 +33,9 @@ const (
 
 var (
 	// TarballRegex matches SourceForge sources
-	TarballRegex = regexp.MustCompile("https?://.*sourceforge.net/projects?/(.+)/files/(.+/)?(.+?)-([\\d]+(?:.\\d+)*\\w*?)\\.(?:zip|tar\\..+z.*)(?:\\/download)?$")
+	TarballRegex = regexp.MustCompile("https?://.*sourceforge.net/projects?/(.+)/files/(.+/)?(.+?)[\\-_]([\\d]+(?:.\\d+)*\\w*?)\\.(?:zip|tar\\..+z.*)(?:\\/download)?$")
 	// ProjectRegex matches SourceForge sources
-	ProjectRegex = regexp.MustCompile("https?://.*sourceforge.net/projects?/(.+)/(?:files/)?(.+?/)?(.+?)-([\\d]+(?:.\\d+)*\\w*?).+$")
+	ProjectRegex = regexp.MustCompile("https?://.*sourceforge.net/projects?/(.+)/(?:files/)?(.+?/)?(.+?)[\\-_]([\\d]+(?:.\\d+)*\\w*?).+$")
 )
 
 // Item represents an entry in the RSS Feed
@@ -101,7 +101,7 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
 		sm[1], sm[3] = sm[3], sm[1]
 	}
 	// Query the API
-	resp, err := http.Get(fmt.Sprintf(API, sm[1], sm[2]))
+	resp, err := http.Get(fmt.Sprintf(API, sm[1], ""))
 	if err != nil {
 		log.Debugf("Failed to get releases: %s\n", err)
 		err = results.Unavailable
