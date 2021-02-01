@@ -17,10 +17,12 @@
 package config
 
 import (
-	"github.com/BurntSushi/toml"
-	log "github.com/DataDrake/waterlog"
 	"os/user"
 	"path/filepath"
+	"strings"
+
+	"github.com/BurntSushi/toml"
+	log "github.com/DataDrake/waterlog"
 )
 
 // Config is the configuration for cuppa
@@ -40,7 +42,8 @@ func init() {
 		return
 	}
 	configPath := filepath.Join(user.HomeDir, ".config", "cuppa")
-	if _, err = toml.DecodeFile(configPath, &Global); err != nil {
+	if _, err = toml.DecodeFile(configPath, &Global); err != nil &&
+		!strings.HasSuffix(err.Error(), "no such file or directory") {
 		log.Fatalf("Failed to read config, reason: '%s'\n", err)
 	}
 }
