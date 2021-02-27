@@ -103,7 +103,7 @@ where CMD is the action to perform and URL is the link to an existing source.
 | Soureforge | https://sourceforge.net/projects/libmtp/files/libmtp/1.1.17/libmtp-1.1.17.tar.gz/download |
 ## License
  
-Copyright 2016-2020 Bryan T. Meyers <root@datadrake.com>
+Copyright 2016-2021 Bryan T. Meyers <root@datadrake.com>
  
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
