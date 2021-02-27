@@ -21,7 +21,6 @@ import (
 	"github.com/DataDrake/cuppa/providers"
 	log "github.com/DataDrake/waterlog"
 	"github.com/DataDrake/waterlog/format"
-	"os"
 )
 
 // Quick gets the most recent release for a given source, without pretty printing
@@ -44,11 +43,11 @@ func QuickRun(r *cmd.RootCMD, c *cmd.CMD) {
 	found := false
 	log.SetFormat(format.Un)
 	for _, p := range providers.All() {
-		name := p.Match(args.URL)
-		if name == "" {
+		match := p.Match(args.URL)
+		if len(match) == 0 {
 			continue
 		}
-		r, err := p.Latest(name)
+		r, err := p.Latest(match)
 		if err != nil {
 			continue
 		}
@@ -59,5 +58,4 @@ func QuickRun(r *cmd.RootCMD, c *cmd.CMD) {
 	if !found {
 		log.Fatalln("No release found.")
 	}
-	os.Exit(0)
 }

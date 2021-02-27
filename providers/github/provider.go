@@ -36,22 +36,22 @@ var (
 // Provider is the upstream provider interface for github
 type Provider struct{}
 
-// Name gives the name of this provider
-func (c Provider) Name() string {
+// String gives the name of this provider
+func (c Provider) String() string {
 	return "GitHub"
 }
 
 // Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
+func (c Provider) Match(query string) (params []string) {
 	if sm := SourceRegex.FindStringSubmatch(query); len(sm) > 1 {
-		return sm[1]
+		params = sm[1:]
 	}
-	return ""
+	return
 }
 
 // Latest finds the newest release for a github package
-func (c Provider) Latest(name string) (r *results.Result, err error) {
-	rs, err := c.GetReleases(name, 100)
+func (c Provider) Latest(params []string) (r *results.Result, err error) {
+	rs, err := c.GetReleases(params[0], 100)
 	if err == nil {
 		r = rs.Last()
 	}
@@ -59,7 +59,7 @@ func (c Provider) Latest(name string) (r *results.Result, err error) {
 }
 
 // Releases finds all matching releases for a github package
-func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
-	rs, err = c.GetReleases(name, 100)
+func (c Provider) Releases(params []string) (rs *results.ResultSet, err error) {
+	rs, err = c.GetReleases(params[0], 100)
 	return
 }

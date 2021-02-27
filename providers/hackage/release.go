@@ -1,5 +1,5 @@
 //
-// Copyright 2016-2020 Bryan T. Meyers <root@datadrake.com>
+// Copyright 2016-2021 Bryan T. Meyers <root@datadrake.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,5 +37,6 @@ type Release struct {
 // Convert turns a Hackage release into a Cuppa result
 func (hr *Release) Convert() *results.Result {
 	pub, _ := time.Parse(time.UnixDate, hr.released)
-	return results.NewResult(hr.name, hr.version, fmt.Sprintf(TarballAPI, hr.name, hr.version, hr.name, hr.version), pub)
+	loc := fmt.Sprintf(TarballAPI, hr.name, hr.version, hr.name, hr.version)
+	return results.NewResult(hr.name, hr.version, loc, pub)
 }

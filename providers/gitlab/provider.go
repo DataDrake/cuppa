@@ -17,11 +17,9 @@
 package gitlab
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
-	log "github.com/DataDrake/waterlog"
-	"net/http"
+	"github.com/DataDrake/cuppa/util"
 	"regexp"
 	"strings"
 )
@@ -44,22 +42,22 @@ var (
 // Provider is the upstream provider interface for GitLab
 type Provider struct{}
 
-// Name gives the name of this provider
-func (c Provider) Name() string {
+// String gives the name of this provider
+func (c Provider) String() string {
 	return "GitLab"
 }
 
 // Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
+func (c Provider) Match(query string) (params []string) {
 	if sm := SourceRegex.FindStringSubmatch(query); len(sm) > 2 {
-		return sm[0]
+		params = sm[1:]
 	}
-	return ""
+	return
 }
 
 // Latest finds the newest release for a GitLab package
-func (c Provider) Latest(name string) (r *results.Result, err error) {
-	rs, err := c.Releases(name)
+func (c Provider) Latest(params []string) (r *results.Result, err error) {
+	rs, err := c.Releases(params)
 	if err == nil {
 		r = rs.Last()
 	}
@@ -67,36 +65,14 @@ func (c Provider) Latest(name string) (r *results.Result, err error) {
 }
 
 // Releases finds all matching releases for a GitLab package
-func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
+func (c Provider) Releases(params []string) (rs *results.ResultSet, err error) {
 	// Query the API
-	sm := SourceRegex.FindStringSubmatch(name)
-	id := strings.Join(strings.Split(sm[2], "/"), "%2f")
-	resp, err := http.Get(fmt.Sprintf(TagsEndpoint, sm[1], id))
-	if err != nil {
-		log.Debugf("Failed to get releases: %s\n", err)
-		err = results.Unavailable
-		return
-	}
-	defer resp.Body.Close()
-	// Translate Status Code
-	switch resp.StatusCode {
-	case 200:
-		break
-	case 404:
-		err = results.NotFound
-		return
-	default:
-		err = results.Unavailable
-		return
-	}
-	// Decode response
-	dec := json.NewDecoder(resp.Body)
+	id := strings.Join(strings.Split(params[1], "/"), "%2f")
+	url := fmt.Sprintf(TagsEndpoint, params[0], id)
 	var tags Tags
-	if err = dec.Decode(&tags); err != nil {
-		log.Debugf("Failed to decode response: %s\n", err)
-		err = results.Unavailable
+	if err = util.FetchJSON(url, "releases", &tags); err != nil {
 		return
 	}
-	rs = tags.Convert(sm[1], sm[2])
+	rs = tags.Convert(params[0], params[1])
 	return
 }

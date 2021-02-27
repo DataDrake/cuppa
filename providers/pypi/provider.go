@@ -17,11 +17,9 @@
 package pypi
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
-	log "github.com/DataDrake/waterlog"
-	"net/http"
+	"github.com/DataDrake/cuppa/util"
 	"regexp"
 	"strings"
 )
@@ -39,83 +37,41 @@ var TarballRegex = regexp.MustCompile("https?://[^/]*py[^/]*/packages/(?:[^/]+/)
 // Provider is the upstream provider interface for pypi
 type Provider struct{}
 
-// Name gives the name of this provider
-func (c Provider) Name() string {
+// String gives the name of this provider
+func (c Provider) String() string {
 	return "PyPi"
 }
 
 // Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
+func (c Provider) Match(query string) (params []string) {
 	if sm := TarballRegex.FindStringSubmatch(query); len(sm) > 1 {
 		pieces := strings.Split(sm[1], "-")
 		if len(pieces) > 2 {
-			return strings.Join(pieces[0:len(pieces)-1], "-")
+			params = append(params, strings.Join(pieces[0:len(pieces)-1], "-"))
+			return
 		}
-		return pieces[0]
+		params = append(params, pieces[0])
 	}
-	return ""
+	return
 }
 
 // Latest finds the newest release for a pypi package
-func (c Provider) Latest(name string) (r *results.Result, err error) {
-	// Query the API
-	resp, err := http.Get(fmt.Sprintf(SourceAPI, name))
-	if err != nil {
-		log.Debugf("Failed to get latest: %s\n", err)
-		err = results.Unavailable
-		return
-	}
-	defer resp.Body.Close()
-	// Translate Status Code
-	switch resp.StatusCode {
-	case 200:
-		break
-	case 404:
-		err = results.NotFound
-		return
-	default:
-		err = results.Unavailable
-		return
-	}
-	// Decode response
-	dec := json.NewDecoder(resp.Body)
+func (c Provider) Latest(params []string) (r *results.Result, err error) {
+	name := params[0]
+	url := fmt.Sprintf(SourceAPI, name)
 	var cr LatestSource
-	if err = dec.Decode(&cr); err != nil {
-		log.Debugf("Failed to decode latest: %s\n", err)
-		err = results.Unavailable
-		return
+	if err = util.FetchJSON(url, "latest", &cr); err == nil {
+		r = cr.Convert(name)
 	}
-	r = cr.Convert(name)
 	return
 }
 
 // Releases finds all matching releases for a pypi package
-func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
-	// Query the API
-	resp, err := http.Get(fmt.Sprintf(SourceAPI, name))
-	if err != nil {
-		log.Debugf("Failed to get releases: %s\n", err)
-		err = results.Unavailable
-		return
-	}
-	defer resp.Body.Close()
-	// Translate Status Code
-	switch resp.StatusCode {
-	case 200:
-		break
-	case 404:
-		err = results.NotFound
-		return
-	default:
-		err = results.Unavailable
-		return
-	}
-	// Decode response
-	dec := json.NewDecoder(resp.Body)
+func (c Provider) Releases(params []string) (rs *results.ResultSet, err error) {
+	name := params[0]
+	url := fmt.Sprintf(SourceAPI, name)
 	var crs Releases
-	if err = dec.Decode(&crs); err != nil {
-		log.Debugf("Failed to decode releases: %s\n", err)
-		err = results.Unavailable
+	if err = util.FetchJSON(url, "releases", &crs); err != nil {
 		return
 	}
 	if len(crs.Releases) == 0 {
@@ -123,6 +79,5 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
 		return
 	}
 	rs = crs.Convert(name)
-	err = nil
 	return
 }

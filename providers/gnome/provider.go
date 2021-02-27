@@ -41,22 +41,22 @@ var TarballRegex = regexp.MustCompile("https?://(?:ftp.gnome.org/pub/gnome|downl
 // Provider is the upstream provider interface for GNOME
 type Provider struct{}
 
-// Name gives the name of this provider
-func (c Provider) Name() string {
+// String gives the name of this provider
+func (c Provider) String() string {
 	return "GNOME"
 }
 
 // Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
+func (c Provider) Match(query string) (params []string) {
 	if sm := TarballRegex.FindStringSubmatch(query); len(sm) > 1 {
-		return sm[1]
+		params = sm[1:]
 	}
-	return ""
+	return
 }
 
 // Latest finds the newest release for a GNOME package
-func (c Provider) Latest(name string) (r *results.Result, err error) {
-	rs, err := c.Releases(name)
+func (c Provider) Latest(params []string) (r *results.Result, err error) {
+	rs, err := c.Releases(params)
 	if err == nil {
 		r = rs.Last()
 	}
@@ -64,7 +64,8 @@ func (c Provider) Latest(name string) (r *results.Result, err error) {
 }
 
 // Releases finds all matching releases for a rubygems package
-func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
+func (c Provider) Releases(params []string) (rs *results.ResultSet, err error) {
+	name := params[0]
 	// Query the API
 	resp, err := http.Get(fmt.Sprintf(CacheAPI, name))
 	if err != nil {

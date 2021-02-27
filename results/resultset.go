@@ -59,6 +59,7 @@ func (rs *ResultSet) AddResult(r *Result) {
 
 // First retrieves the first result from a query
 func (rs *ResultSet) First() *Result {
+	sort.Sort(rs)
 	return rs.results[0]
 }
 
@@ -73,8 +74,8 @@ func (rs *ResultSet) Last() *Result {
 
 // PrintAll pretty-prints an entire ResultSet
 func (rs *ResultSet) PrintAll() {
-	fmt.Printf("%-25s: '%s'\n", "Results of Query", rs.query)
-	fmt.Printf("%-25s: %d\n\n", "Total Number of Results", rs.Len())
+	fmt.Printf("%s: '%s'\n", "Results of Query", rs.query)
+	fmt.Printf("%s: %d\n\n", "Total Number of Results", rs.Len())
 	sort.Sort(rs)
 	for _, r := range rs.results {
 		r.Print()

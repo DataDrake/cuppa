@@ -17,11 +17,9 @@
 package cpan
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
-	log "github.com/DataDrake/waterlog"
-	"net/http"
+	"github.com/DataDrake/cuppa/util"
 	"regexp"
 	"strings"
 )
@@ -39,56 +37,37 @@ var SearchRegex = regexp.MustCompile("https?://*(?:/.*cpan.org)(?:/CPAN)?/author
 // Provider is the upstream provider interface for CPAN
 type Provider struct{}
 
-// Name gives the name of this provider
-func (c Provider) Name() string {
+// String gives the name of this provider
+func (c Provider) String() string {
 	return "CPAN"
 }
 
 // Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
+func (c Provider) Match(query string) (params []string) {
 	if sm := SearchRegex.FindStringSubmatch(query); len(sm) > 0 {
 		sms := strings.Split(sm[1], "/")
 		filename := sms[len(sms)-1]
 		pieces := strings.Split(filename, "-")
 		if len(pieces) > 2 {
-			return strings.Join(pieces[0:len(pieces)-1], "-")
+			params = append(params, strings.Join(pieces[0:len(pieces)-1], "-"))
+			return
 		}
-		return pieces[0]
+		params = append(params, pieces[0])
 	}
-	return ""
+	return
 }
 
 // Latest finds the newest release for a CPAN package
-func (c Provider) Latest(name string) (r *results.Result, err error) {
+func (c Provider) Latest(params []string) (r *results.Result, err error) {
+	name := params[0]
 	// Query the APIDownloadURL
 	module, err := nameToModule(name)
 	if err != nil {
 		return
 	}
-	resp, err := http.Get(fmt.Sprintf(APIDownloadURL, module))
-	if err != nil {
-		log.Debugf("Failed to get releases: %s\n", err)
-		err = results.Unavailable
-		return
-	}
-	defer resp.Body.Close()
-	// Translate Status Code
-	switch resp.StatusCode {
-	case 200:
-		break
-	case 404:
-		err = results.NotFound
-		return
-	default:
-		err = results.Unavailable
-		return
-	}
-	// Decode response
-	dec := json.NewDecoder(resp.Body)
+	url := fmt.Sprintf(APIDownloadURL, module)
 	var rel Release
-	if err = dec.Decode(&rel); err != nil {
-		log.Debugf("Failed to decode response: %s\n", err)
-		err = results.Unavailable
+	if err = util.FetchJSON(url, "latest", &rel); err != nil {
 		return
 	}
 	if len(rel.Error) > 0 {
@@ -102,9 +81,9 @@ func (c Provider) Latest(name string) (r *results.Result, err error) {
 }
 
 // Releases finds all matching releases for a CPAN package
-func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
-	if r, err := c.Latest(name); err == nil {
-		rs = results.NewResultSet(name)
+func (c Provider) Releases(params []string) (rs *results.ResultSet, err error) {
+	if r, err := c.Latest(params); err == nil {
+		rs = results.NewResultSet(params[0])
 		rs.AddResult(r)
 	}
 	return

@@ -20,7 +20,6 @@ import (
 	"github.com/DataDrake/cli-ng/cmd"
 	"github.com/DataDrake/cuppa/providers"
 	log "github.com/DataDrake/waterlog"
-	"os"
 )
 
 // Latest gets the most recent release for a given source
@@ -42,25 +41,23 @@ func LatestRun(r *cmd.RootCMD, c *cmd.CMD) {
 	args := c.Args.(*LatestArgs)
 	found := false
 	for _, p := range providers.All() {
-		log.Infof("\033[1m%s\033[21m checking for match:\n", p.Name())
-		name := p.Match(args.URL)
-		if name == "" {
-			log.Warnf("\033[1m%s\033[21m does not match.\n", p.Name())
+		log.Infof("\033[1m%s\033[22m checking for match:\n", p)
+		match := p.Match(args.URL)
+		if len(match) == 0 {
+			log.Warnf("\033[1m%s\033[22m does not match.\n", p)
 			continue
 		}
-		r, err := p.Latest(name)
+		r, err := p.Latest(match)
 		if err != nil {
-			log.Warnf("Could not get latest \033[1m%s\033[21m, reason: %s\n", name, err)
+			log.Warnf("Could not get latest \033[1m%s\033[22m, reason: %s\n", match[0], err)
 			continue
 		}
 		found = true
 		r.Print()
-		log.Goodf("\033[1m%s\033[21m match(es) found.\n", p.Name())
+		log.Goodf("\033[1m%s\033[22m match(es) found.\n", p)
 	}
-	if found {
-		log.Goodln("Done")
-	} else {
+	if !found {
 		log.Fatalln("No release found.")
 	}
-	os.Exit(0)
+	log.Goodln("Done")
 }

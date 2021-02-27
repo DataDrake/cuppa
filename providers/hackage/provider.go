@@ -17,9 +17,9 @@
 package hackage
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
+	"github.com/DataDrake/cuppa/util"
 	log "github.com/DataDrake/waterlog"
 	"io/ioutil"
 	"net/http"
@@ -41,22 +41,22 @@ var TarballRegex = regexp.MustCompile("https?://hackage.haskell.org/package/.*/(
 // Provider is the upstream provider interface for hackage
 type Provider struct{}
 
-// Name gives the name of this provider
-func (c Provider) Name() string {
+// String gives the name of this provider
+func (c Provider) String() string {
 	return "Hackage"
 }
 
 // Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
+func (c Provider) Match(query string) (params []string) {
 	if sm := TarballRegex.FindStringSubmatch(query); len(sm) > 1 {
-		return sm[1]
+		params = sm[1:]
 	}
-	return ""
+	return
 }
 
 // Latest finds the newest release for a hackage package
-func (c Provider) Latest(name string) (r *results.Result, err error) {
-	rs, err := c.Releases(name)
+func (c Provider) Latest(params []string) (r *results.Result, err error) {
+	rs, err := c.Releases(params)
 	if err == nil {
 		r = rs.First()
 	}
@@ -64,39 +64,11 @@ func (c Provider) Latest(name string) (r *results.Result, err error) {
 }
 
 // Releases finds all matching releases for a hackage package
-func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
-	// Query the API
-	r, err := http.NewRequest("GET", fmt.Sprintf(VersionsAPI, name), nil)
-	if err != nil {
-		log.Debugf("Failed to create request: %s\n", err)
-		err = results.Unavailable
-		return
-	}
-	r.Header.Set("Accept", "application/json")
-	resp, err := http.DefaultClient.Do(r)
-	if err != nil {
-		log.Debugf("Failed to get versions: %s\n", err)
-		err = results.Unavailable
-		return
-	}
-	defer resp.Body.Close()
-	// Translate Status Code
-	switch resp.StatusCode {
-	case 200:
-		break
-	case 404:
-		err = results.NotFound
-		return
-	default:
-		err = results.Unavailable
-		return
-	}
-	// Decode response
-	dec := json.NewDecoder(resp.Body)
+func (c Provider) Releases(params []string) (rs *results.ResultSet, err error) {
+	name := params[0]
+	url := fmt.Sprintf(VersionsAPI, name)
 	var versions Versions
-	if err = dec.Decode(&versions); err != nil {
-		log.Debugf("Failed to decode versions: %s\n", err)
-		err = results.Unavailable
+	if err = util.FetchJSON(url, "versions", &versions); err != nil {
 		return
 	}
 	// Process releases

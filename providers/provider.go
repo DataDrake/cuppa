@@ -36,10 +36,10 @@ import (
 
 // Provider provides a common interface for each of the backend providers
 type Provider interface {
-	Name() string
-	Match(query string) string
-	Latest(name string) (*results.Result, error)
-	Releases(name string) (*results.ResultSet, error)
+	String() string
+	Match(query string) []string
+	Latest(params []string) (*results.Result, error)
+	Releases(params []string) (*results.ResultSet, error)
 }
 
 // All returns a list of all available providers
@@ -47,17 +47,17 @@ func All() []Provider {
 	return []Provider{
 		cpan.Provider{},
 		github.Provider{},
+		gitlab.Provider{},
 		gnome.Provider{},
 		gnu.Provider{},
 		hackage.Provider{},
+		html.Provider{},
 		jetbrains.Provider{},
 		kde.Provider{},
 		launchpad.Provider{},
 		pypi.Provider{},
 		rubygems.Provider{},
 		sourceforge.Provider{},
-		git.Provider{},
-		gitlab.Provider{},
-		html.Provider{},
+		git.Provider{}, // Git should be last to avoid using it unless necessary
 	}
 }

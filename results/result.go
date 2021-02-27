@@ -19,7 +19,8 @@ package results
 import (
 	"fmt"
 	"github.com/DataDrake/cuppa/version"
-	"strings"
+	"os"
+	"text/tabwriter"
 	"time"
 )
 
@@ -42,18 +43,20 @@ func NewResult(name, v string, location string, published time.Time) *Result {
 
 // Print pretty-prints a single Result
 func (r *Result) Print() {
-	fmt.Printf("%-10s: %s\n", "Name", r.Name)
-	fmt.Printf("%-10s: %s\n", "Version", strings.Join(r.Version, "."))
+	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
+	fmt.Fprintf(tw, "%s\t: %s\n", "Name", r.Name)
+	fmt.Fprintf(tw, "%s\t: %s\n", "Version", r.Version)
 	if r.Location != "" {
-		fmt.Printf("%-10s: %s\n", "Location", r.Location)
+		fmt.Fprintf(tw, "%s\t: %s\n", "Location", r.Location)
 	}
 	if !r.Published.IsZero() {
-		fmt.Printf("%-10s: %s\n", "Published", r.Published.Format(time.RFC3339))
+		fmt.Fprintf(tw, "%s\t: %s\n", "Published", r.Published.Format(time.RFC3339))
 	}
+	tw.Flush()
 	fmt.Println()
 }
 
 // PrintSimple only prints the version and the location of the latest release
 func (r *Result) PrintSimple() {
-	fmt.Printf("%s %s\n", strings.Join(r.Version, "."), r.Location)
+	fmt.Printf("%s %s\n", r.Version, r.Location)
 }

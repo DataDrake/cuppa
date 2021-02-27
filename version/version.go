@@ -176,3 +176,8 @@ func (v Version) FindDate() time.Time {
 	}
 	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 }
+
+// String converts a version to a string for printing
+func (v Version) String() string {
+	return strings.Join(v, ".")
+}

@@ -17,11 +17,9 @@
 package launchpad
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/DataDrake/cuppa/results"
-	log "github.com/DataDrake/waterlog"
-	"net/http"
+	"github.com/DataDrake/cuppa/util"
 	"regexp"
 )
 
@@ -42,22 +40,22 @@ var SourceRegex = regexp.MustCompile("https?://launchpad.net/(.*)/.*/.*/\\+downl
 // Provider is the upstream provider interface for launchpad
 type Provider struct{}
 
-// Name gives the name of this provider
-func (c Provider) Name() string {
+// String gives the name of this provider
+func (c Provider) String() string {
 	return "Launchpad"
 }
 
 // Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
+func (c Provider) Match(query string) (params []string) {
 	if sm := SourceRegex.FindStringSubmatch(query); len(sm) > 1 {
-		return sm[1]
+		params = sm[1:]
 	}
-	return ""
+	return
 }
 
 // Latest finds the newest release for a launchpad package
-func (c Provider) Latest(name string) (r *results.Result, err error) {
-	rs, err := c.Releases(name)
+func (c Provider) Latest(params []string) (r *results.Result, err error) {
+	rs, err := c.Releases(params)
 	if err == nil {
 		r = rs.Last()
 	}
@@ -65,39 +63,12 @@ func (c Provider) Latest(name string) (r *results.Result, err error) {
 }
 
 // Releases finds all matching releases for a launchpad package
-func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
+func (c Provider) Releases(params []string) (rs *results.ResultSet, err error) {
+	name := params[0]
 	// Query the API
-	r, err := http.NewRequest("GET", fmt.Sprintf(SeriesAPI, name), nil)
-	if err != nil {
-		log.Debugf("Failed to build request: %s\n", err)
-		err = results.Unavailable
-		return
-	}
-	r.Header.Set("Accept", "application/json")
-	resp, err := http.DefaultClient.Do(r)
-	if err != nil {
-		log.Debugf("Failed to get series: %s\n", err)
-		err = results.Unavailable
-		return
-	}
-	defer resp.Body.Close()
-	// Translate Status Code
-	switch resp.StatusCode {
-	case 200:
-		break
-	case 404:
-		err = results.NotFound
-		return
-	default:
-		err = results.Unavailable
-		return
-	}
-	// Decode response
-	dec := json.NewDecoder(resp.Body)
+	url := fmt.Sprintf(SeriesAPI, name)
 	var seriesList SeriesList
-	if err = dec.Decode(&seriesList); err != nil {
-		log.Debugf("Failed to decode series: %s\n", err)
-		err = results.Unavailable
+	if err = util.FetchJSON(url, "series", &seriesList); err != nil {
 		return
 	}
 	// Proccess Releases
@@ -115,28 +86,16 @@ func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
 		default:
 			continue
 		}
-		r, err := http.Get(fmt.Sprintf(ReleasesAPI, name, s.Name))
-		if err != nil {
-			log.Debugf("Failed to get releases: %s\n", err)
-			continue
-		}
-		dec := json.NewDecoder(r.Body)
+		url := fmt.Sprintf(ReleasesAPI, name, s.Name)
 		var vl VersionList
-		if err = dec.Decode(&vl); err != nil {
-			log.Debugf("Failed to decode releases: %s\n", err)
+		if err = util.FetchJSON(url, "releases", &vl); err != nil {
 			continue
 		}
 		for i := len(vl.Versions) - 1; i >= 0; i-- {
 			r := vl.Versions[i]
-			resp, err := http.Get(fmt.Sprintf(FilesAPI, name, s.Name, r.Number))
-			if err != nil {
-				log.Debugf("Failed to get files: %s\n", err)
-				continue
-			}
-			dec := json.NewDecoder(resp.Body)
+			url := fmt.Sprintf(FilesAPI, name, s.Name, r.Number)
 			var fl FileList
-			if err = dec.Decode(&fl); err != nil {
-				log.Debugf("Failed to decode files: %s\n", err)
+			if err = util.FetchJSON(url, "files", &fl); err != nil {
 				continue
 			}
 			var lr Release

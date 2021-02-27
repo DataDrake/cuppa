@@ -17,11 +17,8 @@
 package cpan
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/DataDrake/cuppa/results"
-	log "github.com/DataDrake/waterlog"
-	"net/http"
+	"github.com/DataDrake/cuppa/util"
 )
 
 // APIModule holds the name of a Perl Module
@@ -31,32 +28,10 @@ type APIModule struct {
 
 func nameToModule(name string) (module string, err error) {
 	// Query the Release API
-	resp, err := http.Get(fmt.Sprintf(APIRelease, name))
-	if err != nil {
-		log.Debugf("Failed to get CPAN module: %s\n", err)
-		err = results.Unavailable
-		return
-	}
-	defer resp.Body.Close()
-	// Translate Status Code
-	switch resp.StatusCode {
-	case 200:
-		break
-	case 404:
-		err = results.NotFound
-		return
-	default:
-		err = results.Unavailable
-		return
-	}
-	// Decode response
-	dec := json.NewDecoder(resp.Body)
+	url := fmt.Sprintf(APIRelease, name)
 	var r APIModule
-	if err = dec.Decode(&r); err != nil {
-		log.Debugf("Failed to decode response: %s\n", err)
-		err = results.Unavailable
-		return
+	if err = util.FetchJSON(url, "CPAN module", &r); err == nil {
+		module = r.Module
 	}
-	module = r.Module
 	return
 }

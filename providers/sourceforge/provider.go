@@ -67,26 +67,26 @@ func (f *Feed) toResults(name string) *results.ResultSet {
 // Provider is the upstream provider interface for SourceForge
 type Provider struct{}
 
-// Name gives the name of this provider
-func (c Provider) Name() string {
+// String gives the name of this provider
+func (c Provider) String() string {
 	return "SourceForge"
 }
 
 // Match checks to see if this provider can handle this kind of query
-func (c Provider) Match(query string) string {
+func (c Provider) Match(query string) (params []string) {
 	sm := TarballRegex.FindStringSubmatch(query)
 	if len(sm) != 5 {
 		sm = ProjectRegex.FindStringSubmatch(query)
 	}
 	if len(sm) == 5 {
-		return sm[0]
+		params = append(params, query)
 	}
-	return ""
+	return
 }
 
 // Latest finds the newest release for a SourceForge package
-func (c Provider) Latest(name string) (r *results.Result, err error) {
-	rs, err := c.Releases(name)
+func (c Provider) Latest(params []string) (r *results.Result, err error) {
+	rs, err := c.Releases(params)
 	if err == nil {
 		r = rs.First()
 	}
@@ -94,7 +94,8 @@ func (c Provider) Latest(name string) (r *results.Result, err error) {
 }
 
 // Releases finds all matching releases for a SourceForge package
-func (c Provider) Releases(name string) (rs *results.ResultSet, err error) {
+func (c Provider) Releases(params []string) (rs *results.ResultSet, err error) {
+	name := params[0]
 	sm := TarballRegex.FindStringSubmatch(name)
 	if len(sm) != 5 {
 		sm = ProjectRegex.FindStringSubmatch(name)

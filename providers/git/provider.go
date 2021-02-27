@@ -31,26 +31,22 @@ import (
 // Provider provides a common interface for each of the backend providers
 type Provider struct{}
 
-// Name returns the name of this provider
-func (p Provider) Name() string {
+// String returns the name of this provider
+func (p Provider) String() string {
 	return "Git"
 }
 
 // Match checks to see if this provider can handle this kind of query
-func (p Provider) Match(query string) string {
+func (p Provider) Match(query string) (params []string) {
 	if strings.HasPrefix(query, "git|") || strings.HasSuffix(query, ".git") {
-		pieces := strings.Split(query, "|")
-		if len(pieces) > 1 {
-			return pieces[1]
-		}
-		return pieces[0]
+		params = append(params, strings.TrimPrefix(query, "git|"))
 	}
-	return ""
+	return
 }
 
 // Latest finds the newest release for a Git package
-func (p Provider) Latest(name string) (r *results.Result, err error) {
-	rs, err := p.Releases(name)
+func (p Provider) Latest(params []string) (r *results.Result, err error) {
+	rs, err := p.Releases(params)
 	if err == nil {
 		r = rs.Last()
 	}
@@ -58,7 +54,8 @@ func (p Provider) Latest(name string) (r *results.Result, err error) {
 }
 
 // Releases finds all matching releases for a Git package
-func (p Provider) Releases(name string) (rs *results.ResultSet, err error) {
+func (p Provider) Releases(params []string) (rs *results.ResultSet, err error) {
+	name := params[0]
 	pieces := strings.Split(name, "/")
 	repoName := strings.Split(pieces[len(pieces)-1], ".")[0]
 	tmp := fmt.Sprintf("/tmp/%s", repoName)
