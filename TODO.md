@@ -4,6 +4,8 @@
 # BACKLOG
 
  - [ ] Allow Github provider to gracefully fail without API token
+ - [ ] Add Bitbucket provider
+ - [ ] Improve SourceForge matching
 
 # COMPLETED
 
