@@ -17,31 +17,21 @@
 package cli
 
 import (
-	"github.com/DataDrake/cli-ng/cmd"
+	"github.com/DataDrake/cli-ng/v2/cmd"
 	log "github.com/DataDrake/waterlog"
 	"github.com/DataDrake/waterlog/format"
 	"github.com/DataDrake/waterlog/level"
 	log2 "log"
 )
 
-// GlobalFlags contains the flags for all commands
-type GlobalFlags struct{}
-
 // Root is the main command for this application
-var Root *cmd.RootCMD
+var Root = &cmd.Root{
+	Name:  "cuppa",
+	Short: "Comprehensive Upstream Provider Polling Assistant",
+}
 
 func init() {
-	// Build Application
-	Root = &cmd.RootCMD{
-		Name:  "cuppa",
-		Short: "Comprehensive Upstream Provider Polling Assistant",
-		Flags: &GlobalFlags{},
-	}
-	// Setup the Sub-Commands
-	Root.RegisterCMD(&cmd.Help)
-	Root.RegisterCMD(&Latest)
-	Root.RegisterCMD(&Quick)
-	Root.RegisterCMD(&Releases)
+	cmd.Register(&cmd.Help)
 
 	//Set up logging
 	log.SetFlags(log2.Ltime)

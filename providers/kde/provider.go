@@ -135,6 +135,10 @@ func (c Provider) Releases(params []string) (rs *results.ResultSet, err error) {
 		}
 		break
 	}
+	if rs.Len() == 0 {
+		err = results.NotFound
+		return
+	}
 	err = nil
 	return
 }

@@ -27,7 +27,6 @@ import (
 const (
 	// SourceFormat is the format string for GitLab release tarballs
 	SourceFormat = "https://%s/%s/-/archive/%s/%s.tar.gz"
-
 	// TagsEndpoint is the API endpoint URL for GitLab project tags
 	TagsEndpoint = "https://%s/api/v4/projects/%s/repository/tags"
 )

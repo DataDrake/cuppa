@@ -147,7 +147,6 @@ func (c Provider) GetReleases(name string, max int) (rs *results.ResultSet, err 
 		err = results.Unavailable
 		return
 	}
-	// Query the API
 	req, _ := http.NewRequest("POST", GraphQLAPI, &buff)
 	if key := config.Global.Github.Key; len(key) > 0 {
 		req.Header["Authorization"] = []string{"token " + key}
@@ -170,7 +169,7 @@ func (c Provider) GetReleases(name string, max int) (rs *results.ResultSet, err 
 		err = results.Unavailable
 		return
 	}
-	// Decode resposne
+	// Decode response
 	dec := json.NewDecoder(resp.Body)
 	var rqr RepoQueryResult
 	if err = dec.Decode(&rqr); err != nil {

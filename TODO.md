@@ -1,15 +1,14 @@
 # TODO
 
- - [ ] Code clean-up
 
 # BACKLOG
 
- - [ ] Underline in waterlog printouts
  - [ ] Allow Github provider to gracefully fail without API token
- - [ ] Upgrade to cli-ng v2
- - [ ] Upgrade to waterlog v1.1
 
 # COMPLETED
 
+ - [x] Underline in waterlog printouts
+ - [x] Upgrade to cli-ng v2
+ - [x] Code clean-up
  - [x] Update copyright notices
 

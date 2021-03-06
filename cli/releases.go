@@ -17,13 +17,17 @@
 package cli
 
 import (
-	"github.com/DataDrake/cli-ng/cmd"
+	"github.com/DataDrake/cli-ng/v2/cmd"
 	"github.com/DataDrake/cuppa/providers"
 	log "github.com/DataDrake/waterlog"
 )
 
+func init() {
+	cmd.Register(&Releases)
+}
+
 // Releases gets all releases for a given source
-var Releases = cmd.CMD{
+var Releases = cmd.Sub{
 	Name:  "releases",
 	Alias: "r",
 	Short: "Get all stable releases",
@@ -37,7 +41,7 @@ type ReleasesArgs struct {
 }
 
 // ReleasesRun carries out finding all releases
-func ReleasesRun(r *cmd.RootCMD, c *cmd.CMD) {
+func ReleasesRun(r *cmd.Root, c *cmd.Sub) {
 	args := c.Args.(*ReleasesArgs)
 	found := false
 	for _, p := range providers.All() {

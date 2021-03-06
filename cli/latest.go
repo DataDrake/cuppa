@@ -17,13 +17,17 @@
 package cli
 
 import (
-	"github.com/DataDrake/cli-ng/cmd"
+	"github.com/DataDrake/cli-ng/v2/cmd"
 	"github.com/DataDrake/cuppa/providers"
 	log "github.com/DataDrake/waterlog"
 )
 
+func init() {
+	cmd.Register(&Latest)
+}
+
 // Latest gets the most recent release for a given source
-var Latest = cmd.CMD{
+var Latest = cmd.Sub{
 	Name:  "latest",
 	Alias: "l",
 	Short: "Get the latest stable release",
@@ -37,7 +41,7 @@ type LatestArgs struct {
 }
 
 // LatestRun carries out finding the latest release
-func LatestRun(r *cmd.RootCMD, c *cmd.CMD) {
+func LatestRun(r *cmd.Root, c *cmd.Sub) {
 	args := c.Args.(*LatestArgs)
 	found := false
 	for _, p := range providers.All() {

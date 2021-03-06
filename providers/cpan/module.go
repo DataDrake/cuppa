@@ -26,8 +26,10 @@ type APIModule struct {
 	Module string `json:"main_module"`
 }
 
+// APIRelease is the format string for the metacpan release API
+const APIRelease = "https://fastapi.metacpan.org/v1/release/%s"
+
 func nameToModule(name string) (module string, err error) {
-	// Query the Release API
 	url := fmt.Sprintf(APIRelease, name)
 	var r APIModule
 	if err = util.FetchJSON(url, "CPAN module", &r); err == nil {

@@ -19,7 +19,6 @@ package git
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"github.com/DataDrake/cuppa/results"
 	"io"
 	"os"
@@ -57,8 +56,8 @@ func (p Provider) Latest(params []string) (r *results.Result, err error) {
 func (p Provider) Releases(params []string) (rs *results.ResultSet, err error) {
 	name := params[0]
 	pieces := strings.Split(name, "/")
-	repoName := strings.Split(pieces[len(pieces)-1], ".")[0]
-	tmp := fmt.Sprintf("/tmp/%s", repoName)
+	repoName := strings.TrimSuffix(pieces[len(pieces)-1], ".git")
+	tmp := "/tmp/" + repoName
 	defer os.RemoveAll(tmp)
 	// Shallow clone repo to temp directory
 	cmd := exec.Command("git", "clone", "--depth=1", name)
@@ -76,8 +75,6 @@ func (p Provider) Releases(params []string) (rs *results.ResultSet, err error) {
 	// Read git tags
 	var buff bytes.Buffer
 	read := bufio.NewReader(&buff)
-	var tag string
-	var date time.Time
 	cmd = exec.Command("git", "log", "--tags", "-n 10", "--format='%S %cI'")
 	cmd.Dir = tmp
 	cmd.Stdout = &buff
@@ -87,8 +84,8 @@ func (p Provider) Releases(params []string) (rs *results.ResultSet, err error) {
 	line, _, err := read.ReadLine()
 	for err == nil {
 		pieces = strings.Fields(string(line))
-		tag = pieces[0]
-		date, _ = time.Parse("2006-01-02T15:04:05-07:00", pieces[1])
+		tag := pieces[0]
+		date, _ := time.Parse("2006-01-02T15:04:05-07:00", pieces[1])
 		r := results.NewResult(repoName, tag, "git|"+name, date)
 		rs.AddResult(r)
 		line, _, err = read.ReadLine()

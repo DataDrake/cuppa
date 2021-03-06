@@ -40,6 +40,7 @@ var skipWords = []string{
 	"dev", "DEV",
 	"unstable", "Unstable", "UNSTABLE",
 	"eap", "EAP",
+	"donotuse",
 }
 
 // AddResult appends a new Result

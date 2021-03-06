@@ -24,12 +24,8 @@ import (
 	"strings"
 )
 
-const (
-	// APIRelease is the format string for the metacpan release API
-	APIRelease = "https://fastapi.metacpan.org/v1/release/%s"
-	// APIDownloadURL is the format string for the metacpan download_url API
-	APIDownloadURL = "https://fastapi.metacpan.org/v1/download_url/%s"
-)
+// APIDownloadURL is the format string for the metacpan download_url API
+const APIDownloadURL = "https://fastapi.metacpan.org/v1/download_url/%s"
 
 // SearchRegex is the regexp for "search.cpan.org"
 var SearchRegex = regexp.MustCompile("https?://*(?:/.*cpan.org)(?:/CPAN)?/authors/id/(.+)$")
@@ -60,7 +56,6 @@ func (c Provider) Match(query string) (params []string) {
 // Latest finds the newest release for a CPAN package
 func (c Provider) Latest(params []string) (r *results.Result, err error) {
 	name := params[0]
-	// Query the APIDownloadURL
 	module, err := nameToModule(name)
 	if err != nil {
 		return

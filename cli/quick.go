@@ -17,14 +17,18 @@
 package cli
 
 import (
-	"github.com/DataDrake/cli-ng/cmd"
+	"github.com/DataDrake/cli-ng/v2/cmd"
 	"github.com/DataDrake/cuppa/providers"
 	log "github.com/DataDrake/waterlog"
 	"github.com/DataDrake/waterlog/format"
 )
 
+func init() {
+	cmd.Register(&Quick)
+}
+
 // Quick gets the most recent release for a given source, without pretty printing
-var Quick = cmd.CMD{
+var Quick = cmd.Sub{
 	Name:  "quick",
 	Alias: "q",
 	Short: "Get the version and location of the most recent release",
@@ -38,7 +42,7 @@ type QuickArgs struct {
 }
 
 // QuickRun carries out finding the latest release
-func QuickRun(r *cmd.RootCMD, c *cmd.CMD) {
+func QuickRun(r *cmd.Root, c *cmd.Sub) {
 	args := c.Args.(*QuickArgs)
 	found := false
 	log.SetFormat(format.Un)
