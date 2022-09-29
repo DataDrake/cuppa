@@ -113,7 +113,7 @@ func NewVersion(raw string) Version {
 	return v
 }
 
-// Compare allows to version nubmers to be compared to see which is newer (higher)
+// Compare allows to version numbers to be compared to see which is newer (higher)
 func (v Version) Compare(old Version) int {
 	result := 0
 	for i, piece := range v {
